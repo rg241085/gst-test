@@ -39,61 +39,85 @@
 <body>
 
     <div class="login-card">
-        <h2 id="formTitle">Welcome Back</h2>
-        <p id="formSubtitle">Login to your Ultimate GST account</p>
-
         <div id="errorMsg"></div>
 
-        <!-- Google Login Button -->
-        <button class="btn btn-google" onclick="handleGoogleAuth()">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
-            Continue with Google
-        </button>
+        <!-- 🟢 MAIN AUTH FORM (Email/Password + Google) -->
+        <div id="mainAuthForm">
+            <h2 id="formTitle">Welcome Back</h2>
+            <p id="formSubtitle">Login to your Ultimate GST account</p>
 
-        <div class="divider">OR</div>
+            <button class="btn btn-google" onclick="handleGoogleAuth()">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
+                Continue with Google
+            </button>
 
-        <!-- Signup Specific Fields -->
-        <div class="signup-fields" id="signupFields">
+            <div class="divider">OR</div>
+
+            <div class="signup-fields" id="signupFields">
+                <div class="input-group">
+                    <label>Full Name <span style="color:red;">*</span></label>
+                    <input type="text" id="fullName" placeholder="Rahul Kumar">
+                </div>
+                <div class="input-group">
+                    <label>Mobile / WhatsApp Number <span style="color:red;">*</span></label>
+                    <input type="tel" id="mobile" placeholder="9876543210">
+                </div>
+                <div class="input-group">
+                    <label>Company / Firm Name <span style="color:red;">*</span></label>
+                    <input type="text" id="firmName" placeholder="M/s Sharma Traders">
+                </div>
+                <div class="input-group">
+                    <label>GST Number (Optional)</label>
+                    <input type="text" id="gstNum" placeholder="08ABCDE1234F1Z5">
+                </div>
+            </div>
+
             <div class="input-group">
-                <label>Full Name <span style="color:red;">*</span></label>
-                <input type="text" id="fullName" placeholder="Rahul Kumar">
+                <label>Email Address <span style="color:red;">*</span></label>
+                <input type="email" id="email" placeholder="you@company.com">
             </div>
             <div class="input-group">
+                <label>Password <span style="color:red;">*</span></label>
+                <input type="password" id="password" placeholder="••••••••">
+            </div>
+
+            <button class="btn btn-primary" id="mainBtn" onclick="handleAuth()">Login</button>
+
+            <div class="toggle-text" id="toggleDiv">
+                New user? <span onclick="toggleForm()">Create a 7-Day Free Trial</span>
+            </div>
+        </div>
+
+        <!-- 🔵 COMPLETE PROFILE FORM (For New Google Users Only) -->
+        <div id="googleProfileForm" style="display:none;">
+            <h2 style="color: #1a237e;">Complete Profile</h2>
+            <p style="color: #666; margin-bottom: 25px;">Please provide your business details to activate your 7-Day Free Trial.</p>
+            
+            <div class="input-group">
                 <label>Mobile / WhatsApp Number <span style="color:red;">*</span></label>
-                <input type="tel" id="mobile" placeholder="9876543210">
+                <input type="tel" id="gMobile" placeholder="9876543210">
             </div>
             <div class="input-group">
                 <label>Company / Firm Name <span style="color:red;">*</span></label>
-                <input type="text" id="firmName" placeholder="M/s Sharma Traders">
+                <input type="text" id="gFirmName" placeholder="M/s Sharma Traders">
             </div>
             <div class="input-group">
                 <label>GST Number (Optional)</label>
-                <input type="text" id="gstNum" placeholder="08ABCDE1234F1Z5">
+                <input type="text" id="gGstNum" placeholder="08ABCDE1234F1Z5">
             </div>
+
+            <button class="btn btn-primary" id="gSubmitBtn" onclick="saveGoogleProfile()">Save & Start Trial</button>
         </div>
 
-        <!-- Common Fields -->
-        <div class="input-group">
-            <label>Email Address <span style="color:red;">*</span></label>
-            <input type="email" id="email" placeholder="you@company.com">
-        </div>
-        <div class="input-group">
-            <label>Password <span style="color:red;">*</span></label>
-            <input type="password" id="password" placeholder="••••••••">
-        </div>
-
-        <button class="btn btn-primary" id="mainBtn" onclick="handleAuth()">Login</button>
-
-        <div class="toggle-text" id="toggleDiv">
-            New user? <span onclick="toggleForm()">Create a 7-Day Free Trial</span>
-        </div>
     </div>
 
+    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+        // 🔥 आपकी Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyB8fQTZ8mw4ABYJmPh1pQH_hilEhkSI9jE",
             authDomain: "ultimate-gst-saas.firebaseapp.com",
@@ -109,6 +133,7 @@
         const googleProvider = new GoogleAuthProvider();
 
         let isLoginMode = true;
+        let tempGoogleUser = null; // Google से आये नए यूज़र का डेटा थोड़े समय के लिए रोकने के लिए
 
         window.toggleForm = function() {
             isLoginMode = !isLoginMode;
@@ -128,7 +153,7 @@
             errDiv.style.display = 'block';
         }
 
-        // Email & Password Auth
+        // 1. Email & Password Auth
         window.handleAuth = async function() {
             let email = document.getElementById('email').value.trim();
             let password = document.getElementById('password').value.trim();
@@ -160,35 +185,66 @@
                     window.location.href = "index.html";
                 }
             } catch (error) {
-                console.error(error);
                 showError(error.message.replace("Firebase:", ""));
                 document.getElementById('mainBtn').innerText = isLoginMode ? "Login" : "Sign Up & Start Trial";
             }
         }
 
-        // Google Auth
+        // 2. Google Auth
         window.handleGoogleAuth = async function() {
             try {
                 const result = await signInWithPopup(auth, googleProvider);
                 const user = result.user;
 
-                // Check if user is new in database
+                // डेटाबेस में चेक करें कि क्या यूज़र पहले से है?
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
 
                 if (!docSnap.exists()) {
-                    // New Google User -> Create 7 day trial with default empty fields
-                    await createDatabaseRecord(user.uid, user.email, user.displayName, "Not Provided", "Not Provided", "");
+                    // 🔴 नया यूज़र है: उसे डैशबोर्ड पर मत भेजो। 'Complete Profile' फॉर्म दिखाओ।
+                    tempGoogleUser = user;
+                    document.getElementById('mainAuthForm').style.display = 'none';
+                    document.getElementById('googleProfileForm').style.display = 'block';
+                    document.getElementById('errorMsg').style.display = 'none';
+                } else {
+                    // 🟢 पुराना यूज़र है: सीधा अंदर भेज दो!
+                    window.location.href = "index.html";
                 }
-                
-                window.location.href = "index.html";
             } catch (error) {
                 console.error(error);
                 showError("Google Sign-In failed or was cancelled.");
             }
         }
 
-        // Function to create user record in Firestore
+        // 3. Google Profile Save Function (For New Users)
+        window.saveGoogleProfile = async function() {
+            if (!tempGoogleUser) return;
+
+            let mobile = document.getElementById('gMobile').value.trim();
+            let firm = document.getElementById('gFirmName').value.trim();
+            let gst = document.getElementById('gGstNum').value.trim();
+
+            if (!mobile || !firm) {
+                showError("Please provide your Mobile Number and Firm Name.");
+                return;
+            }
+
+            document.getElementById('gSubmitBtn').innerText = "Saving... ⏳";
+
+            try {
+                // डेटाबेस में नाम (Google से मिला हुआ) और बाकी डिटेल्स सेव करें
+                await createDatabaseRecord(tempGoogleUser.uid, tempGoogleUser.email, tempGoogleUser.displayName || "User", mobile, firm, gst);
+                
+                alert("✅ Profile completed! Your 7-Day Free Trial has started.");
+                window.location.href = "index.html";
+            } catch (error) {
+                console.error(error);
+                showError("Error saving profile. Please try again.");
+                document.getElementById('gSubmitBtn').innerText = "Save & Start Trial";
+            }
+        }
+
+        // 4. Common Database Saving Logic
         async function createDatabaseRecord(uid, email, name, mobile, firm, gst) {
             let today = new Date();
             today.setDate(today.getDate() + 7);
