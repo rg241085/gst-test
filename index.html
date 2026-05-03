@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GST Auto Reconciler - Dashboard</title>
+    <style>
+        /* 🌞 Light Mode (Default) Variables */
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --card-border: #e0e0e0;
+            --text-muted: #666;
+            --header-bg: #2c3e50;
+        }
+
+        /* 🌙 Dark Mode Variables */
+        body.dark-mode {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --card-border: #333333;
+            --text-muted: #aaaaaa;
+            --header-bg: #1a1a1a;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .header {
+            background-color: var(--header-bg);
+            color: #ffffff;
+            width: 100%;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            /* For Dark Mode Button Positioning */
+            transition: background-color 0.3s;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            color: #bdc3c7;
+        }
+
+        /* ✨ Theme Toggle Button */
+        .theme-toggle {
+            position: absolute;
+            right: 30px;
+            top: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .container {
+            display: flex;
+            gap: 40px;
+            margin-top: 60px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Card UI Design */
+        .module-card {
+            background: var(--card-bg);
+            width: 320px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--card-border);
+        }
+
+        .module-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            border-color: #888;
+        }
+
+        .card-header {
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #ffffff;
+        }
+
+        /* GSTR-1 Theme (Green/Sales) */
+        .gstr1-theme .card-header {
+            background: linear-gradient(135deg, #2e7d32, #4caf50);
+        }
+
+        .gstr1-theme .btn-launch {
+            background: #2e7d32;
+        }
+
+        .gstr1-theme .btn-launch:hover {
+            background: #1b5e20;
+        }
+
+        /* GSTR-2 Theme (Blue/Purchase) */
+        .gstr2-theme .card-header {
+            background: linear-gradient(135deg, #0056b3, #00a8ff);
+        }
+
+        .gstr2-theme .btn-launch {
+            background: #0056b3;
+        }
+
+        .gstr2-theme .btn-launch:hover {
+            background: #004085;
+        }
+
+        .card-body {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-body p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-top: 0;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .features-list li {
+            margin-bottom: 8px;
+        }
+
+        .btn-launch {
+            color: #ffffff;
+            text-align: center;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 16px;
+            transition: 0.2s;
+        }
+
+        .footer {
+            margin-top: auto;
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+    </style>
+
+    <!-- 🔒 SECURITY LOCK SCRIPT (Firebase Auth & Firestore Check) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // 🔥 आपकी Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8fQTZ8mw4ABYJmPh1pQH_hilEhkSI9jE",
+            authDomain: "ultimate-gst-saas.firebaseapp.com",
+            projectId: "ultimate-gst-saas",
+            storageBucket: "ultimate-gst-saas.firebasestorage.app",
+            messagingSenderId: "791122268097",
+            appId: "1:791122268097:web:adefdc6856a93f87312940"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // जैसे ही पेज खुलेगा, यह सिक्योरिटी चेक रन होगा
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                // ❌ अगर लॉगिन नहीं है, तो तुरंत login.html पर फेंक दो
+                window.location.replace("login.html");
+            } else {
+                // ✅ लॉगिन है, अब डेटाबेस से Expiry Date चेक करो
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    let userData = docSnap.data();
+                    let today = new Date().toISOString().split('T')[0];
+
+                    if (userData.expiryDate < today || userData.status === 'Blocked') {
+                        // ❌ प्लान एक्सपायर हो गया है या ब्लॉक है
+                        alert("⚠️ Your subscription has expired or your account is blocked. Please renew to continue.");
+                        await signOut(auth); // ज़बरदस्ती लॉग-आउट करो
+                        window.location.replace("login.html");
+                    } else {
+                        // ✅ सब कुछ सही है! यूज़र को काम करने दो।
+                        // आप चाहें तो हेडर में यूज़र का ईमेल दिखा सकते हैं
+                        let userEmailDisplay = document.getElementById("userEmailDisplay");
+                        if (userEmailDisplay) userEmailDisplay.innerText = user.email;
+                    }
+                } else {
+                    // ❌ अगर डेटाबेस में यूज़र का रिकॉर्ड ही नहीं है
+                    await signOut(auth);
+                    window.location.replace("login.html");
+                }
+            }
+        });
+
+        // 🚪 लॉग-आउट करने का फंक्शन
+        window.logoutUser = function () {
+            signOut(auth).then(() => {
+                window.location.replace("login.html");
+            });
+        }
+    </script>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>GST Auto Reconciler</h1>
+        <p>Ultimate Enterprise Edition • Smart Matching System</p>
+        <!-- ✨ Dark Mode Toggle Button -->
+        <button class="theme-toggle" id="themeToggleBtn" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+        <button onclick="logoutUser()"
+            style="background:#b71c1c; color:#fff; border:1px solid #fff; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:3px; margin-left:10px;">🚪
+            Logout</button>
+    </div>
+
+    <div class="container">
+
+        <!-- 🛒 GSTR-2 (Purchase) Link Card -->
+        <a href="GSTR2_Purchase.html" class="module-card gstr2-theme">
+            <div class="card-header">
+                <h2>🛒 GSTR-2</h2>
+            </div>
+            <div class="card-body">
+                <p><strong>Purchase Reconciliation</strong><br>अपनी बुक्स की परचेज़ को पोर्टल के 2A/2B डेटा से मैच करें।
+                </p>
+                <ul class="features-list">
+                    <li>✔️ JSON / ZIP Auto Extract</li>
+                    <li>✔️ Multi-Month Append Support</li>
+                    <li>✔️ Smart Number Matching</li>
+                </ul>
+                <div class="btn-launch">Open Purchase Module ➔</div>
+            </div>
+        </a>
+
+        <!-- 📦 GSTR-1 (Sales) Link Card -->
+        <a href="GSTR1_Sales.html" class="module-card gstr1-theme">
+            <div class="card-header">
+                <h2>📦 GSTR-1</h2>
+            </div>
+            <div class="card-body">
+                <p><strong>Sales Reconciliation</strong><br>अपनी बुक्स की सेल को पोर्टल के GSTR-1 डेटा से मैच करें।</p>
+                <ul class="features-list">
+                    <li>✔️ Buyer GSTIN Fallback</li>
+                    <li>✔️ Fast O(n) Processing</li>
+                    <li>✔️ B2B & CDNR Separation</li>
+                </ul>
+                <div class="btn-launch">Open Sales Module ➔</div>
+            </div>
+        </a>
+
+    </div>
+
+    <div class="footer">
+        Powered by Advanced IndexedDB & JSZip Technology
+    </div>
+
+    <!-- ✨ Dark Mode Logic -->
+    <script>
+        // चेक करें कि क्या यूज़र ने पहले से डार्क मोड चालू किया हुआ था
+        window.onload = function () {
+            if (localStorage.getItem('gst_dark_mode') === 'true') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeToggleBtn').innerHTML = '☀️ Light Mode';
+            }
+        };
+
+        // बटन दबाने पर मोड बदलें और सेव करें
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            let isDark = document.body.classList.contains('dark-mode');
+
+            // सेटिंग को कंप्यूटर में सेव करें
+            localStorage.setItem('gst_dark_mode', isDark);
+
+            // बटन का नाम और आइकॉन बदलें
+            document.getElementById('themeToggleBtn').innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+    </script>
+
+</body>
+
+</html>
