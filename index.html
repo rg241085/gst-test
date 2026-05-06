@@ -4,335 +4,821 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GST Auto Reconciler - Dashboard</title>
+    <title>EasyGSTMatch - India's Smartest Auto Reconciler</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* 🌞 Light Mode (Default) Variables */
-        :root {
-            --bg-color: #f4f7f6;
-            --text-color: #333;
-            --card-bg: #ffffff;
-            --card-border: #e0e0e0;
-            --text-muted: #666;
-            --header-bg: #2c3e50;
-        }
-
-        /* 🌙 Dark Mode Variables */
-        body.dark-mode {
-            --bg-color: #121212;
-            --text-color: #e0e0e0;
-            --card-bg: #1e1e1e;
-            --card-border: #333333;
-            --text-muted: #aaaaaa;
-            --header-bg: #1a1a1a;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
+            background-color: #ffffff;
+            color: #1f2937;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        /* Navbar */
+        .navbar {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .header {
-            background-color: var(--header-bg);
-            color: #ffffff;
-            width: 100%;
-            padding: 20px 0;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            position: relative;
-            /* For Dark Mode Button Positioning */
-            transition: background-color 0.3s;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 28px;
-            letter-spacing: 1px;
-        }
-
-        .header p {
-            margin: 5px 0 0 0;
-            font-size: 14px;
-            color: #bdc3c7;
-        }
-
-        /* ✨ Theme Toggle Button */
-        .theme-toggle {
-            position: absolute;
-            right: 30px;
-            top: 25px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            transition: 0.3s;
-        }
-
-        .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
-        }
-
-        .container {
-            display: flex;
-            gap: 40px;
-            margin-top: 60px;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        /* Card UI Design */
-        .module-card {
-            background: var(--card-bg);
-            width: 320px;
-            border-radius: 12px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-            text-decoration: none;
-            color: var(--text-color);
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid var(--card-border);
-        }
-
-        .module-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-            border-color: #888;
-        }
-
-        .card-header {
-            padding: 25px 20px;
-            text-align: center;
-        }
-
-        .card-header h2 {
-            margin: 0;
-            font-size: 24px;
-            color: #ffffff;
-        }
-
-        /* GSTR-1 Theme (Green/Sales) */
-        .gstr1-theme .card-header {
-            background: linear-gradient(135deg, #2e7d32, #4caf50);
-        }
-
-        .gstr1-theme .btn-launch {
-            background: #2e7d32;
-        }
-
-        .gstr1-theme .btn-launch:hover {
-            background: #1b5e20;
-        }
-
-        /* GSTR-2 Theme (Blue/Purchase) */
-        .gstr2-theme .card-header {
-            background: linear-gradient(135deg, #0056b3, #00a8ff);
-        }
-
-        .gstr2-theme .btn-launch {
-            background: #0056b3;
-        }
-
-        .gstr2-theme .btn-launch:hover {
-            background: #004085;
-        }
-
-        .card-body {
-            padding: 20px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
             justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .card-body p {
-            color: var(--text-muted);
-            line-height: 1.6;
-            margin-top: 0;
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0d6efd;
+            letter-spacing: -1px;
+            text-decoration: none;
         }
 
-        .features-list {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 20px 0;
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        .features-list li {
-            margin-bottom: 8px;
-        }
-
-        .btn-launch {
-            color: #ffffff;
-            text-align: center;
-            padding: 12px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 16px;
+        .nav-links a {
+            margin-left: 30px;
+            text-decoration: none;
+            color: #4b5563;
+            font-weight: 500;
+            font-size: 15px;
             transition: 0.2s;
         }
 
-        .footer {
-            margin-top: auto;
-            padding: 20px;
-            color: var(--text-muted);
+        .nav-links a:hover {
+            color: #0d6efd;
+        }
+
+        .nav-btns {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-login {
+            text-decoration: none;
+            color: #0d6efd;
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        .btn-login:hover {
+            background: #f3f4f6;
+        }
+
+        .btn-primary {
+            text-decoration: none;
+            background: #0d6efd;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: 0.2s;
+            box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary:hover {
+            background: #0b5ed7;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(13, 110, 253, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+            padding: 80px 5% 100px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+            border-bottom: 1px solid #e5e7eb;
+            flex-wrap: wrap;
+        }
+
+        .hero-content {
+            flex: 1;
+            min-width: 300px;
+            max-width: 600px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #1d4ed8;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            border: 1px solid #bfdbfe;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin: 0 0 20px 0;
+            color: #111827;
+            line-height: 1.2;
+            letter-spacing: -1px;
+        }
+
+        .hero h1 span {
+            color: #0d6efd;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #4b5563;
+            margin: 0 0 35px 0;
+            line-height: 1.6;
+        }
+
+        .hero-img {
+            flex: 1;
+            text-align: center;
+            min-width: 300px;
+            perspective: 1000px;
+        }
+
+        /* ✨ 3D Software Mockup (No Image Needed!) ✨ */
+        .dashboard-mockup {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px #e5e7eb;
+            overflow: hidden;
+            text-align: left;
+            transform: rotateY(-10deg) rotateX(5deg) scale(0.95);
+            transition: transform 0.5s ease;
+            cursor: pointer;
+        }
+
+        .dashboard-mockup:hover {
+            transform: rotateY(0deg) rotateX(0deg) scale(1);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3), 0 0 0 1px #e5e7eb;
+        }
+
+        .dm-header {
+            background: #004085;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dm-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dm-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .dm-dot.red {
+            background: #ff5f56;
+        }
+
+        .dm-dot.yellow {
+            background: #ffbd2e;
+        }
+
+        .dm-dot.green {
+            background: #27c93f;
+        }
+
+        .dm-title {
+            color: white;
             font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+        }
+
+        .dm-stats {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .dm-card {
+            flex: 1;
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+        }
+
+        .dm-card h4 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .dm-card p {
+            margin: 4px 0 0;
+            font-size: 9px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+
+        .dm-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .dm-table th {
+            background: #f3f4f6;
+            color: #4b5563;
+            padding: 10px 15px;
+            font-size: 10px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .dm-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .dm-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .dm-badge.matched {
+            background: #dcfce7;
+            color: #059669;
+        }
+
+        .dm-badge.mismatch {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .dm-badge.partial {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        /* Trust Bar */
+        .trust-bar {
+            background: #111827;
+            color: #9ca3af;
+            padding: 30px 5%;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .trust-bar span {
+            color: #ffffff;
+            font-size: 24px;
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 800;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 5%;
+            background: #ffffff;
+            text-align: center;
+        }
+
+        .features h2 {
+            font-size: 36px;
+            font-weight: 800;
+            margin: 0 0 15px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .features>p {
+            font-size: 16px;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto 50px auto;
+        }
+
+        .feature-grid {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .feature-card {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 40px 30px;
+            flex: 1;
+            min-width: 280px;
+            max-width: 350px;
+            text-align: left;
+            transition: 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            border-color: #cbd5e1;
+        }
+
+        .f-icon {
+            width: 50px;
+            height: 50px;
+            background: #e0f2fe;
+            color: #0d6efd;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .f-icon.green {
+            background: #dcfce7;
+            color: #059669;
+        }
+
+        .f-icon.orange {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+
+        .feature-card p {
+            font-size: 15px;
+            color: #6b7280;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* ✨ PRICING SECTION */
+        .pricing {
+            padding: 80px 5%;
+            background: #f8fafc;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .pricing h2 {
+            font-size: 36px;
+            font-weight: 800;
+            margin: 0 0 15px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .pricing>p {
+            font-size: 16px;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto 50px auto;
+        }
+
+        .price-card {
+            background: #ffffff;
+            border: 2px solid #0d6efd;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 400px;
+            margin: 0 auto;
+            box-shadow: 0 20px 40px rgba(13, 110, 253, 0.15);
+            position: relative;
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0d6efd;
+            color: white;
+            padding: 4px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .plan-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #4b5563;
+            margin-bottom: 15px;
+        }
+
+        .price-amount {
+            font-size: 56px;
+            font-weight: 800;
+            color: #111827;
+            margin-bottom: 5px;
+        }
+
+        .price-amount span {
+            font-size: 18px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .price-desc {
+            font-size: 14px;
+            color: #059669;
+            font-weight: 600;
+            margin-bottom: 30px;
+            background: #dcfce7;
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 30px 0;
+            text-align: left;
+        }
+
+        .plan-features li {
+            margin-bottom: 15px;
+            font-size: 15px;
+            color: #4b5563;
+            display: flex;
+            align-items: center;
+        }
+
+        .plan-features li::before {
+            content: "✔️";
+            margin-right: 10px;
+            color: #059669;
+        }
+
+        /* ✨ CONTACT SECTION */
+        .contact {
+            padding: 80px 5%;
+            background: #ffffff;
+            text-align: center;
+        }
+
+        .contact h2 {
+            font-size: 36px;
+            font-weight: 800;
+            margin: 0 0 15px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .contact>p {
+            font-size: 16px;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto 40px auto;
+        }
+
+        .contact-card {
+            background: #f0f7ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 400px;
+            margin: 0 auto;
+            transition: 0.3s;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        .c-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .contact-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: #111827;
+            margin: 10px 0 25px 0;
+            letter-spacing: 1px;
+        }
+
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(37, 211, 102, 0.2);
+            transition: 0.2s;
+        }
+
+        .btn-whatsapp:hover {
+            background: #128C7E;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(37, 211, 102, 0.3);
+        }
+
+        /* CTA Section */
+        .cta {
+            background: #0d6efd;
+            color: white;
+            text-align: center;
+            padding: 80px 5%;
+        }
+
+        .cta h2 {
+            font-size: 36px;
+            margin: 0 0 20px 0;
+            font-weight: 800;
+        }
+
+        .cta p {
+            font-size: 18px;
+            margin: 0 0 30px 0;
+            opacity: 0.9;
+        }
+
+        .btn-white {
+            background: white;
+            color: #0d6efd;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 16px;
+            display: inline-block;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: 0.2s;
+        }
+
+        .btn-white:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Footer */
+        .footer {
+            background: #111827;
+            padding: 40px 5%;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .price-amount {
+                font-size: 48px;
+            }
+
+            .dashboard-mockup {
+                transform: none;
+            }
+
+            .dashboard-mockup:hover {
+                transform: none;
+            }
         }
     </style>
-
-    <!-- 🔒 SECURITY LOCK SCRIPT (Firebase Auth & Firestore Check) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-        // 🔥 आपकी Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyB8fQTZ8mw4ABYJmPh1pQH_hilEhkSI9jE",
-            authDomain: "ultimate-gst-saas.firebaseapp.com",
-            projectId: "ultimate-gst-saas",
-            storageBucket: "ultimate-gst-saas.firebasestorage.app",
-            messagingSenderId: "791122268097",
-            appId: "1:791122268097:web:adefdc6856a93f87312940"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // जैसे ही पेज खुलेगा, यह सिक्योरिटी चेक रन होगा
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                // ❌ अगर लॉगिन नहीं है, तो तुरंत login.html पर फेंक दो
-                window.location.replace("login.html");
-            } else {
-                // ✅ लॉगिन है, अब डेटाबेस से Expiry Date चेक करो
-                const docRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    let userData = docSnap.data();
-                    let today = new Date().toISOString().split('T')[0];
-
-                    if (userData.expiryDate < today || userData.status === 'Blocked') {
-                        // ❌ प्लान एक्सपायर हो गया है या ब्लॉक है
-                        alert("⚠️ Your subscription has expired or your account is blocked. Please renew to continue.");
-                        await signOut(auth); // ज़बरदस्ती लॉग-आउट करो
-                        window.location.replace("login.html");
-                    } else {
-                        // ✅ सब कुछ सही है! यूज़र को काम करने दो।
-                        // आप चाहें तो हेडर में यूज़र का ईमेल दिखा सकते हैं
-                        let userEmailDisplay = document.getElementById("userEmailDisplay");
-                        if (userEmailDisplay) userEmailDisplay.innerText = user.email;
-                    }
-                } else {
-                    // ❌ अगर डेटाबेस में यूज़र का रिकॉर्ड ही नहीं है
-                    await signOut(auth);
-                    window.location.replace("login.html");
-                }
-            }
-        });
-
-        // 🚪 लॉग-आउट करने का फंक्शन
-        window.logoutUser = function () {
-            signOut(auth).then(() => {
-                window.location.replace("login.html");
-            });
-        }
-    </script>
 </head>
 
 <body>
 
-    <div class="header">
-        <h1>GST Auto Reconciler</h1>
-        <p>Ultimate Enterprise Edition • Smart Matching System</p>
-        <!-- ✨ Dark Mode Toggle Button -->
-        <button class="theme-toggle" id="themeToggleBtn" onclick="toggleDarkMode()">🌙 Dark Mode</button>
-        <button onclick="logoutUser()"
-            style="background:#b71c1c; color:#fff; border:1px solid #fff; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:3px; margin-left:10px;">🚪
-            Logout</button>
-    </div>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="#" class="logo">EasyGSTMatch</a>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#contact">Contact</a>
+        </div>
+        <div class="nav-btns">
+            <a href="login.html" class="btn-login">Log in</a>
+            <a href="login.html" class="btn-primary">Start 6-Month Free Trial</a>
+        </div>
+    </nav>
 
-    <div class="container">
-
-        <!-- 🛒 GSTR-2 (Purchase) Link Card -->
-        <a href="GSTR2_Purchase.html" class="module-card gstr2-theme">
-            <div class="card-header">
-                <h2>🛒 GSTR-2</h2>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">🚀 The #1 Choice for CAs & Accountants</div>
+            <h1>Match your GST data in <span>seconds, not days.</span></h1>
+            <p>Automate your GSTR-1 and GSTR-2 reconciliation. Identify missing invoices, catch mismatches, and claim
+                100% accurate ITC with enterprise-grade security.</p>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <a href="login.html" class="btn-primary" style="font-size: 18px; padding: 15px 30px;">Get Started for
+                    Free</a>
             </div>
-            <div class="card-body">
-                <p><strong>Purchase Reconciliation</strong><br>अपनी बुक्स की परचेज़ को पोर्टल के 2A/2B डेटा से मैच करें।
-                </p>
-                <ul class="features-list">
-                    <li>✔️ JSON / ZIP Auto Extract</li>
-                    <li>✔️ Multi-Month Append Support</li>
-                    <li>✔️ Smart Number Matching</li>
-                </ul>
-                <div class="btn-launch">Open Purchase Module ➔</div>
+            <p style="font-size: 13px; color: #9ca3af; margin-top: 15px;">No credit card required • 6-Month full access
+            </p>
+        </div>
+        <div class="hero-img">
+            <!-- ✨ HTML/CSS Dashboard Mockup ✨ -->
+            <div class="dashboard-mockup">
+                <div class="dm-header">
+                    <div class="dm-dots">
+                        <div class="dm-dot red"></div>
+                        <div class="dm-dot yellow"></div>
+                        <div class="dm-dot green"></div>
+                    </div>
+                    <div class="dm-title">EasyGSTMatch - Purchase Reconciler</div>
+                </div>
+                <div class="dm-stats">
+                    <div class="dm-card">
+                        <h4 style="color:#0056b3">300</h4>
+                        <p>Total Invoices</p>
+                    </div>
+                    <div class="dm-card">
+                        <h4 style="color:#2e7d32">285</h4>
+                        <p>Matched</p>
+                    </div>
+                    <div class="dm-card">
+                        <h4 style="color:#d32f2f">15</h4>
+                        <p>Mismatch</p>
+                    </div>
+                </div>
+                <table class="dm-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">GSTIN</th>
+                            <th style="text-align:left;">Status</th>
+                            <th style="text-align:left;">Invoice</th>
+                            <th style="text-align:right;">Difference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="color:#0d6efd;">06AABFN...</td>
+                            <td><span class="dm-badge matched">MATCHED</span></td>
+                            <td>8246</td>
+                            <td style="color:#059669; text-align:right;">₹0.00</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#0d6efd;">08ABJPA...</td>
+                            <td><span class="dm-badge mismatch">NOT IN BOOKS</span></td>
+                            <td>SL/14647</td>
+                            <td style="color:#dc2626; text-align:right;">-₹1,18,899</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#0d6efd;">08AAQCM...</td>
+                            <td><span class="dm-badge partial">PARTIAL MATCH</span></td>
+                            <td>25-26/504</td>
+                            <td style="color:#d97706; text-align:right;">+₹504.76</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-        </a>
+        </div>
+    </section>
 
-        <!-- 📦 GSTR-1 (Sales) Link Card -->
-        <a href="GSTR1_Sales.html" class="module-card gstr1-theme">
-            <div class="card-header">
-                <h2>📦 GSTR-1</h2>
+    <!-- Trust Bar -->
+    <section class="trust-bar">
+        <div><span>100%</span> Data Privacy</div>
+        <div><span>1M+</span> Invoices Processed</div>
+        <div><span>0</span> Errors Found</div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <h2>Why choose EasyGSTMatch?</h2>
+        <p>Built with advanced Tally-like architecture to handle complex accounting data seamlessly.</p>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="f-icon">🛒</div>
+                <h3>GSTR-2 (Purchase) Auto-Sync</h3>
+                <p>Upload Excel/CSV from your books and JSON from the portal. Our smart engine automatically merges
+                    duplicates and detects missing ITCs instantly.</p>
             </div>
-            <div class="card-body">
-                <p><strong>Sales Reconciliation</strong><br>अपनी बुक्स की सेल को पोर्टल के GSTR-1 डेटा से मैच करें।</p>
-                <ul class="features-list">
-                    <li>✔️ Buyer GSTIN Fallback</li>
-                    <li>✔️ Fast O(n) Processing</li>
-                    <li>✔️ B2B & CDNR Separation</li>
-                </ul>
-                <div class="btn-launch">Open Sales Module ➔</div>
+            <div class="feature-card">
+                <div class="f-icon green">📦</div>
+                <h3>GSTR-1 (Sales) Auditing</h3>
+                <p>Verify your sales data before filing. Catch mismatched invoice numbers and partial amount differences
+                    with our advanced fuzzy-matching algorithm.</p>
             </div>
-        </a>
+            <div class="feature-card">
+                <div class="f-icon orange">🔒</div>
+                <h3>100% Offline Security</h3>
+                <p>Your data never leaves your browser. Powered by IndexedDB and HTML5, all processing happens locally
+                    on your computer for ultimate privacy.</p>
+            </div>
+        </div>
+    </section>
 
-    </div>
+    <!-- PRICING SECTION -->
+    <section class="pricing" id="pricing">
+        <h2>Simple & Honest Pricing</h2>
+        <p>Enjoy premium features at a price that makes absolute sense for your business.</p>
 
-    <div class="footer">
-        Powered by Advanced IndexedDB & JSZip Technology
-    </div>
+        <div class="price-card">
+            <div class="popular-badge">Most Popular</div>
+            <div class="plan-name">Pro Annual Plan</div>
+            <div class="price-amount">₹99<span> / year</span></div>
+            <div class="price-desc">Less than the cost of a coffee!</div>
 
-    <!-- ✨ Dark Mode Logic -->
+            <ul class="plan-features">
+                <li>Unlimited GSTR-2 (Purchase) Matching</li>
+                <li>Unlimited GSTR-1 (Sales) Auditing</li>
+                <li>Smart Party Ledger & PDF Reports</li>
+                <li>100% Local Browser Security</li>
+                <li>Priority Support Included</li>
+            </ul>
+
+            <a href="login.html" class="btn-primary" style="width: 100%; box-sizing: border-box;">Start Your 6-Month
+                Free Trial</a>
+        </div>
+    </section>
+
+    <!-- CONTACT SECTION -->
+    <section class="contact" id="contact">
+        <h2>Need Help? Get in Touch</h2>
+        <p>Have questions about the software or need technical support? We are always here to help you.</p>
+
+        <div class="contact-card">
+            <div class="c-icon">📞</div>
+            <h3 style="margin: 0; color: #4b5563;">Call or WhatsApp Us</h3>
+            <div class="contact-number">+91 98879 38518</div>
+            <a href="https://wa.me/919887938518?text=Hello%20EasyGSTMatch%20Team,%20I%20have%20a%20query."
+                target="_blank" class="btn-whatsapp">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.405-.883-.733-1.48-1.638-1.653-1.935-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+                Chat on WhatsApp
+            </a>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <h2>Ready to stop manual matching?</h2>
+        <p>Join smart accountants who are saving hours every month.</p>
+        <a href="login.html" class="btn-white">Claim Your 6-Month Free Trial Now</a>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 EasyGSTMatch.in. All rights reserved.</p>
+        <p style="margin-top: 5px;">Designed for accuracy, built for speed.</p>
+    </footer>
+
+    <!-- Smooth Scrolling -->
     <script>
-        // चेक करें कि क्या यूज़र ने पहले से डार्क मोड चालू किया हुआ था
-        window.onload = function () {
-            if (localStorage.getItem('gst_dark_mode') === 'true') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('themeToggleBtn').innerHTML = '☀️ Light Mode';
-            }
-        };
-
-        // बटन दबाने पर मोड बदलें और सेव करें
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            let isDark = document.body.classList.contains('dark-mode');
-
-            // सेटिंग को कंप्यूटर में सेव करें
-            localStorage.setItem('gst_dark_mode', isDark);
-
-            // बटन का नाम और आइकॉन बदलें
-            document.getElementById('themeToggleBtn').innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
-        }
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+            });
+        });
     </script>
-
 </body>
 
 </html>
