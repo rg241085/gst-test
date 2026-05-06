@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate GST - Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #f8faff;
+            --text-color: #1f2937;
+            --card-bg: #ffffff;
+            --card-border: #e5e7eb;
+            --primary: #0d6efd;
+            --header-bg: #ffffff;
+        }
+
+        body.dark-mode {
+            --bg-color: #111827;
+            --text-color: #f9fafb;
+            --card-bg: #1f2937;
+            --card-border: #374151;
+            --primary: #3b82f6;
+            --header-bg: #1f2937;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            transition: 0.3s;
+        }
+
+        /* Modern Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            background-color: var(--header-bg);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            border: none;
+        }
+
+        .btn-theme {
+            background: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-theme:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-logout {
+            background: transparent;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+
+        .btn-logout:hover {
+            background: #fef2f2;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(180deg, #eef2ff 0%, var(--bg-color) 100%);
+            padding: 80px 5% 120px;
+            text-align: center;
+        }
+
+        body.dark-mode .hero {
+            background: linear-gradient(180deg, #1e293b 0%, var(--bg-color) 100%);
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: #ffffff;
+            color: #059669;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: 1px solid #d1fae5;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 800;
+            margin: 0 0 15px 0;
+            color: var(--text-color);
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #6b7280;
+            margin: 0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Cards Container */
+        .container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: -60px;
+            padding: 0 5%;
+            padding-bottom: 50px;
+        }
+
+        /* Premium Card Design */
+        .module-card {
+            background: var(--card-bg);
+            width: 340px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            text-decoration: none;
+            color: var(--text-color);
+            border: 1px solid var(--card-border);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        .module-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .gstr1-theme .card-icon {
+            background: #dcfce7;
+            color: #059669;
+        }
+
+        .gstr2-theme .card-icon {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .module-card h2 {
+            margin: 0 0 10px 0;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .module-card p {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 0 0 20px 0;
+            line-height: 1.5;
+        }
+
+        .btn-launch {
+            width: 100%;
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            transition: 0.2s;
+            margin-top: auto;
+        }
+
+        .gstr1-theme .btn-launch {
+            background: #059669;
+            color: white;
+        }
+
+        .gstr1-theme .btn-launch:hover {
+            background: #047857;
+        }
+
+        .gstr2-theme .btn-launch {
+            background: #2563eb;
+            color: white;
+        }
+
+        .gstr2-theme .btn-launch:hover {
+            background: #1d4ed8;
+        }
+
+        .trust-banner {
+            text-align: center;
+            margin-top: 50px;
+            padding-bottom: 40px;
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 600;
+        }
+    </style>
+
+    <!-- Firebase Auth Check -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8fQTZ8mw4ABYJmPh1pQH_hilEhkSI9jE",
+            authDomain: "ultimate-gst-saas.firebaseapp.com",
+            projectId: "ultimate-gst-saas",
+            storageBucket: "ultimate-gst-saas.firebasestorage.app",
+            messagingSenderId: "791122268097",
+            appId: "1:791122268097:web:adefdc6856a93f87312940"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.replace("login.html"); }
+            else {
+                const docSnap = await getDoc(doc(db, "users", user.uid));
+                if (docSnap.exists()) {
+                    let userData = docSnap.data();
+                    let today = new Date().toISOString().split('T')[0];
+                    if (userData.expiryDate < today || userData.status === 'Blocked') {
+                        alert("⚠️ Your subscription has expired."); await signOut(auth); window.location.replace("login.html");
+                    }
+                } else { await signOut(auth); window.location.replace("login.html"); }
+            }
+        });
+
+        window.logoutUser = () => { signOut(auth).then(() => { window.location.replace("login.html"); }); }
+    </script>
+</head>
+
+<body>
+
+    <!-- Top Navigation -->
+    <div class="navbar">
+        <div class="logo">Ultimate GST</div>
+        <div class="nav-actions">
+            <button class="nav-btn btn-theme" id="themeToggleBtn" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+            <button class="nav-btn btn-logout" onclick="logoutUser()">Log out</button>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="hero-badge">✔ 100% Accuracy in Matching</div>
+        <h1>Get Maximum Tax Refund</h1>
+        <p>Reconcile thousands of your purchase and sales invoices in seconds. Secure, automated, and built for
+            professionals.</p>
+    </div>
+
+    <!-- Main Modules -->
+    <div class="container">
+
+        <!-- Purchase Card -->
+        <a href="GSTR2_Purchase.html" class="module-card gstr2-theme">
+            <div class="card-icon">🛒</div>
+            <h2>GSTR-2 (Purchase)</h2>
+            <p>Match your books purchase data with GSTR-2A/2B portal data automatically to claim maximum ITC.</p>
+            <div class="btn-launch">Open Module</div>
+        </a>
+
+        <!-- Sales Card -->
+        <a href="GSTR1_Sales.html" class="module-card gstr1-theme">
+            <div class="card-icon">📦</div>
+            <h2>GSTR-1 (Sales)</h2>
+            <p>Audit your books sales data against uploaded GSTR-1 portal data to prevent any mismatches.</p>
+            <div class="btn-launch">Open Module</div>
+        </a>
+
+    </div>
+
+    <div class="trust-banner">
+        ⭐ Trusted by 100+ CAs and Tax Professionals
+    </div>
+
+    <!-- Dark Mode Script -->
+    <script>
+        window.onload = function () {
+            if (localStorage.getItem('gst_dark_mode') === 'true') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeToggleBtn').innerHTML = '☀️ Light Mode';
+            }
+        };
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            let isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('gst_dark_mode', isDark);
+            document.getElementById('themeToggleBtn').innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+    </script>
+
+</body>
+
+</html>
