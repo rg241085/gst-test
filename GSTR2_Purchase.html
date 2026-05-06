@@ -1453,8 +1453,29 @@
                     let pData = await parseFile(selectedPortalFiles[i]);
                     newPortalData = newPortalData.concat(pData);
                 }
+// ✨ Smart Deduplication Logic (डुप्लीकेट बिल रोकने के लिए)
+                let existingKeys = new Set(existingPortal.map(p => p.gstin + "_" + p.inv));
+                let uniqueNewPortalData = [];
 
-                let finalPortalData = existingPortal.concat(newPortalData);
+                newPortalData.forEach(p => {
+                    let key = p.gstin + "_" + p.inv;
+                    if (!existingKeys.has(key)) {
+                        uniqueNewPortalData.push(p);
+                        existingKeys.add(key); // इसे सेट में डाल दें ताकि अगर नई फाइल के अंदर भी डुप्लीकेट हो तो वो भी हट जाए
+                    }
+                });
+
+                // अब पुराने डेटा में सिर्फ़ यूनीक (Unique) नया डेटा ही जोड़ा जाएगा
+                let finalPortalData = existingPortal.concat(uniqueNewPortalData);
+                
+                // बुक्स (Excel) के डेटा में भी अगर कोई डुप्लीकेट एंट्री हो तो उसे भी साफ कर दें
+                let seenBooks = new Set();
+                finalBooksData = finalBooksData.filter(b => {
+                    let key = b.gstin + "_" + b.inv;
+                    if (seenBooks.has(key)) return false;
+                    seenBooks.add(key);
+                    return true;
+                });
 
                 document.getElementById('loadingMsg').innerText = "Saving to IndexedDB securely... ⏳";
                 try {
