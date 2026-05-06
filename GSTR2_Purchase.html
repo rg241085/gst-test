@@ -1,0 +1,2054 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GST Auto Reconciler - Ultimate Enterprise (Purchase)</title>
+
+    <!-- PWA Manifest & Setup -->
+    <link rel="manifest" id="manifest-link">
+    <meta name="theme-color" content="#004085">
+
+    <!-- Excel, IndexedDB & ZIP Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script> <!-- ✨ NEW: ZIP Reader -->
+    <!-- PDF Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 0;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .main-wrapper {
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: #004085;
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .header-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-panel {
+            background: #e9ecef;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ced4da;
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .file-box {
+            flex: 1;
+            background: #fff;
+            border: 1px solid #ced4da;
+            padding: 10px;
+            border-radius: 3px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-box h4 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            color: #004085;
+        }
+
+        .file-box input[type="file"] {
+            font-size: 12px;
+            width: 100%;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+
+        .upload-status-area {
+            margin-top: 10px;
+            padding: 8px;
+            background: #f8f9fa;
+            border: 1px dashed #b0bec5;
+            border-radius: 4px;
+            font-size: 12px;
+            min-height: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .month-badge {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #0d47a1;
+            padding: 2px 6px;
+            border-radius: 12px;
+            margin: 2px;
+            font-weight: bold;
+            border: 1px solid #90caf9;
+        }
+
+        .btn-clear {
+            align-self: flex-start;
+            margin-top: 5px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 3px 8px;
+            font-size: 11px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-clear:hover {
+            background: #c82333;
+        }
+
+        .btn-process {
+            background: #0056b3;
+            color: white;
+            border: none;
+            padding: 0 25px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: 0.2s;
+        }
+
+        .btn-process:hover {
+            background: #004085;
+        }
+
+        .summary-dashboard {
+            padding: 15px 20px;
+            background: #fff;
+            display: none;
+            gap: 15px;
+            border-bottom: 1px solid #ced4da;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            background: #f8f9fa;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            min-width: 120px;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-color: #b0bec5;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .stat-card p {
+            margin: 0;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .txt-total {
+            color: #333;
+        }
+
+        .txt-blue {
+            color: #0056b3;
+        }
+
+        .txt-red {
+            color: #d32f2f;
+        }
+
+        .txt-orange {
+            color: #d84315;
+        }
+
+        .txt-purple {
+            color: #9c27b0;
+        }
+
+        .txt-teal {
+            color: #00897b;
+        }
+
+        .toolbar {
+            padding: 10px 20px;
+            background: #fff;
+            border-bottom: 1px solid #ced4da;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .search-box {
+            padding: 6px;
+            width: 200px;
+            border: 1px solid #b0bec5;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .filter-box {
+            padding: 6px;
+            border: 1px solid #b0bec5;
+            border-radius: 3px;
+            outline: none;
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .font-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+        }
+
+        .font-btn {
+            background: #fff;
+            border: 1px solid #adb5bd;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 3px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .content-area {
+            background: #fff;
+            padding-bottom: 50px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            font-size: 13px;
+            table-layout: fixed;
+        }
+
+        th,
+        td {
+            border: 1px solid #e0e0e0;
+            padding: 6px 8px;
+            word-wrap: break-word;
+            overflow: hidden;
+        }
+
+        th {
+            background: #f8f9fa;
+            color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 2px solid #b0bec5;
+            font-weight: bold;
+            text-align: left;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sortable:hover {
+            background-color: #e2e6ea;
+        }
+
+        .resizer {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 5px;
+            cursor: col-resize;
+            user-select: none;
+            height: 100%;
+            z-index: 11;
+        }
+
+        .resizer:hover,
+        .resizing {
+            background-color: #0056b3;
+            width: 6px;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .col-sno {
+            width: 45px;
+            text-align: center;
+        }
+
+        .col-gstin {
+            width: 130px;
+        }
+
+        .col-name {
+            width: 170px;
+        }
+
+        .col-status {
+            width: 110px;
+        }
+
+        .col-type {
+            width: 75px;
+        }
+
+        .col-inv {
+            width: 110px;
+        }
+
+        .col-date {
+            width: 85px;
+        }
+
+        .col-amt {
+            width: 90px;
+        }
+
+        .col-remark {
+            width: 110px;
+        }
+
+        tr.group-even td {
+            background-color: #f8f9fc;
+        }
+
+        tr.group-odd td {
+            background-color: #ffffff;
+        }
+
+        tr.row-books td {
+            border-bottom: none;
+        }
+
+        tr.row-portal td {
+            border-top: 1px dashed #cfd8dc;
+        }
+
+        tr.spacer-row td {
+            height: 12px;
+            background-color: #ffffff !important;
+            border-top: 1px solid #b0bec5;
+            border-bottom: 1px solid #b0bec5;
+        }
+
+        .source-tag {
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .fuzzy-tag {
+            font-size: 10px;
+            background: #ffe0b2;
+            color: #d84315;
+            padding: 2px 4px;
+            border-radius: 3px;
+            border: 1px solid #ffcc80;
+            margin-left: 5px;
+        }
+
+        .btn-find-gst {
+            font-size: 10px;
+            background: #e0f7fa;
+            color: #00695c;
+            padding: 2px 6px;
+            border-radius: 3px;
+            text-decoration: none;
+            border: 1px solid #b2dfdb;
+            margin-left: 5px;
+            font-family: sans-serif;
+            display: inline-block;
+            transition: 0.2s;
+        }
+
+        .btn-find-gst:hover {
+            background: #b2dfdb;
+            color: #004d40;
+        }
+
+        .btn-edit {
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 5px;
+            opacity: 0.6;
+            transition: 0.2s;
+        }
+
+        .btn-edit:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .total-row {
+            background: #e9ecef;
+            font-weight: bold;
+            color: #000;
+            position: sticky;
+            bottom: 0;
+            z-index: 9;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .diff-row td {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: bold;
+            border-top: 1px dashed #adb5bd;
+        }
+
+        #loadingMsg {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+            color: #0056b3;
+            font-weight: bold;
+            display: none;
+        }
+
+        #sessionMsg {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #388e3c;
+            font-weight: bold;
+            display: none;
+        }
+
+        /* ✨ Remarks Styling */
+        .remark-cell {
+            display: inline-block;
+            color: #0056b3;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            border-bottom: 1px dashed #0056b3;
+        }
+
+        .remark-cell:hover {
+            color: #003d82;
+            border-bottom: 1px solid #003d82;
+        }
+
+        /* Dark Mode Support */
+        body.dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .main-wrapper,
+        body.dark-mode .control-panel,
+        body.dark-mode .file-box,
+        body.dark-mode .summary-dashboard,
+        body.dark-mode .toolbar,
+        body.dark-mode .content-area {
+            background-color: #1e1e1e;
+            border-color: #333;
+        }
+
+        body.dark-mode th {
+            background-color: #2c2c2c;
+            color: #fff;
+            border-color: #444;
+        }
+
+        body.dark-mode td {
+            border-color: #444;
+        }
+
+        body.dark-mode tr.group-even td {
+            background-color: #242424;
+        }
+
+        body.dark-mode tr.group-odd td {
+            background-color: #1e1e1e;
+        }
+
+        body.dark-mode tr.spacer-row td {
+            background-color: #121212 !important;
+            border-color: #333;
+        }
+
+        body.dark-mode .stat-card {
+            background: #2c2c2c;
+            border-color: #444;
+        }
+
+        body.dark-mode .stat-card h3,
+        body.dark-mode .txt-total {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .upload-status-area {
+            background: #2c2c2c;
+            border-color: #555;
+        }
+
+        body.dark-mode input,
+        body.dark-mode select {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+        }
+
+        body.dark-mode .total-row td {
+            background: #2c2c2c;
+            color: #fff;
+        }
+
+        body.dark-mode .diff-row td {
+            background: #4a4a00;
+            color: #ffd54f;
+            border-color: #555;
+        }
+
+        body.dark-mode h4 {
+            color: #90caf9 !important;
+        }
+
+        body.dark-mode .remark-cell {
+            color: #82b1ff;
+            border-bottom-color: #82b1ff;
+        }
+
+        body.dark-mode .remark-cell:hover {
+            color: #b3d4ff;
+            border-bottom-color: #b3d4ff;
+        }
+
+        /* Party Ledger Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-content {
+            background: #fff;
+            width: 95%;
+            max-width: 1200px;
+            height: 90vh;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .close-btn {
+            background: #e53935;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .close-btn:hover {
+            background: #c62828;
+        }
+
+        .ledger-stats-box {
+            display: flex;
+            gap: 15px;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ced4da;
+            flex-wrap: wrap;
+        }
+
+        .l-stat {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 10px 15px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .l-stat h4 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .l-stat p {
+            margin: 0;
+            font-size: 11px;
+            font-weight: bold;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .ledger-table-wrapper {
+            flex: 1;
+            overflow: auto;
+            padding: 0 20px;
+            background: #fff;
+        }
+
+        .gstin-link {
+            color: #0288d1;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .gstin-link:hover {
+            color: #d84315;
+        }
+
+        body.dark-mode .modal-content {
+            background: #1e1e1e;
+            border: 1px solid #444;
+        }
+
+        body.dark-mode .modal-header {
+            background: #111;
+            border-bottom: 1px solid #333;
+        }
+
+        body.dark-mode .ledger-stats-box {
+            background: #121212;
+            border-color: #333;
+        }
+
+        body.dark-mode .l-stat {
+            background: #1e1e1e;
+            border-color: #444;
+        }
+
+        body.dark-mode .l-stat h4 {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .l-stat p {
+            color: #aaa;
+        }
+    </style>
+
+    <!-- 🔒 SECURITY LOCK SCRIPT (Firebase Auth & Firestore Check) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // 🔥 आपकी Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8fQTZ8mw4ABYJmPh1pQH_hilEhkSI9jE",
+            authDomain: "ultimate-gst-saas.firebaseapp.com",
+            projectId: "ultimate-gst-saas",
+            storageBucket: "ultimate-gst-saas.firebasestorage.app",
+            messagingSenderId: "791122268097",
+            appId: "1:791122268097:web:adefdc6856a93f87312940"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // जैसे ही पेज खुलेगा, यह सिक्योरिटी चेक रन होगा
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                // ❌ अगर लॉगिन नहीं है, तो तुरंत login.html पर फेंक दो
+                window.location.replace("login.html");
+            } else {
+                // ✅ लॉगिन है, अब डेटाबेस से Expiry Date चेक करो
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    let userData = docSnap.data();
+                    let today = new Date().toISOString().split('T')[0];
+
+                    if (userData.expiryDate < today || userData.status === 'Blocked') {
+                        // ❌ प्लान एक्सपायर हो गया है या ब्लॉक है
+                        alert("⚠️ Your subscription has expired or your account is blocked. Please renew to continue.");
+                        await signOut(auth); // ज़बरदस्ती लॉग-आउट करो
+                        window.location.replace("login.html");
+                    } else {
+                        // ✅ सब कुछ सही है! यूज़र को काम करने दो।
+                        // आप चाहें तो हेडर में यूज़र का ईमेल दिखा सकते हैं
+                        let userEmailDisplay = document.getElementById("userEmailDisplay");
+                        if (userEmailDisplay) userEmailDisplay.innerText = user.email;
+                    }
+                } else {
+                    // ❌ अगर डेटाबेस में यूज़र का रिकॉर्ड ही नहीं है
+                    await signOut(auth);
+                    window.location.replace("login.html");
+                }
+            }
+        });
+
+        // 🚪 लॉग-आउट करने का फंक्शन
+        window.logoutUser = function () {
+            signOut(auth).then(() => {
+                window.location.replace("login.html");
+            });
+        }
+    </script>
+</head>
+
+<body>
+
+    <!-- Hidden Input for Database Restore -->
+    <input type="file" id="restoreInput" style="display:none;" accept=".json" onchange="handleRestore(event)">
+
+    <div class="main-wrapper">
+        <div class="header">
+            <h1>Ultimate GST™ - GSTR-2 (Purchase) Module</h1>
+            <div class="header-btns">
+                <!-- ✨ NEW Features Buttons -->
+                <button id="installAppBtn" onclick="installPWA()"
+                    style="background:#009688; color:#fff; border:none; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:3px; display:none;">📱
+                    Install App</button>
+                <button onclick="exportBackup()"
+                    style="background:#455a64; color:#fff; border:1px solid #fff; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:3px;"
+                    title="Save Database">💾 Backup</button>
+                <button onclick="triggerRestore()"
+                    style="background:#6d4c41; color:#fff; border:1px solid #fff; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:3px;"
+                    title="Load Database">📂 Restore</button>
+
+                <a href="index.html"
+                    style="background:#6c757d; color:#fff; text-decoration:none; padding:6px 12px; font-weight:bold; border-radius:3px; display:inline-block; margin-left:10px;">🏠
+                    Home</a>
+                <a href="GSTR1_Sales.html"
+                    style="background:#2e7d32; color:#fff; text-decoration:none; padding:6px 12px; font-weight:bold; border-radius:3px; display:inline-block;">📦
+                    Switch to GSTR-1</a>
+
+                <button onclick="showUploadPanel()" id="addMoreBtn"
+                    style="background:#ff9800; color:#fff; border:none; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:3px; display:none;">➕
+                    Add More Data</button>
+                <button onclick="clearSession()"
+                    style="background:#dc3545; color:#fff; border:none; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:3px;">🔄
+                    Clear All Data</button>
+                <button onclick="exportToExcel()"
+                    style="background:#28a745; color:#fff; border:none; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:3px; display:none;"
+                    id="exportBtn">📥 Excel</button>
+                <button onclick="exportToPDF()"
+                    style="background:#e53935; color:#fff; border:none; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:3px; display:none;"
+                    id="exportPdfBtn">📄 PDF</button>
+                <!-- ✨ NEW: Dark Mode Toggle Button -->
+                <button id="themeToggleBtn" onclick="toggleDarkMode()"
+                    style="background:#343a40; color:#fff; border:1px solid #6c757d; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:3px;">🌙
+                    Dark Mode</button>
+
+                <button onclick="logoutUser()"
+                    style="background:#b71c1c; color:#fff; border:1px solid #fff; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:3px; margin-left:10px;">🚪
+                    Logout</button>
+            </div>
+        </div>
+
+        <div class="control-panel" id="controlPanel">
+            <div class="file-box">
+                <h4>📂 Books Data (Excel/CSV)</h4>
+                <input type="file" id="booksFile" accept=".xlsx, .xls, .csv">
+            </div>
+
+            <div class="file-box">
+                <h4>🌐 Portal Data (JSON/ZIP/Excel) - You can add files multiple times</h4>
+                <input type="file" id="portalFile" accept=".xlsx, .xls, .csv, .json, .zip" multiple
+                    onchange="handlePortalFilesSelect(event)">
+                <div class="upload-status-area" id="uploadedMonthsArea">
+                    <span style="color:#78909c;">No portal files selected yet.</span>
+                </div>
+            </div>
+
+            <button class="btn-process" onclick="processFiles()">Process Match</button>
+        </div>
+
+        <div id="sessionMsg">✅ Previous Data Restored Successfully!</div>
+
+        <div class="summary-dashboard" id="summaryDashboard">
+            <div class="stat-card" onclick="setFilter('ALL')" title="सारे बिल देखें">
+                <h3 id="cntTotal" class="txt-total">0</h3>
+                <p class="txt-total">Total Invoices</p>
+            </div>
+            <div class="stat-card" onclick="setFilter('Matched')" title="सिर्फ़ सही बिल देखें">
+                <h3 id="cntMatched" class="txt-blue">0</h3>
+                <p class="txt-blue">Matched</p>
+            </div>
+            <div class="stat-card" onclick="setFilter('Mismatch')" title="सिर्फ़ गलत अमाउंट वाले बिल देखें">
+                <h3 id="cntMismatch" class="txt-red">0</h3>
+                <p class="txt-red">Mismatch</p>
+            </div>
+            <div class="stat-card" onclick="setFilter('Partial Mismatch')" title="नंबर में गड़बड़ वाले बिल देखें">
+                <h3 id="cntPartial" class="txt-orange">0</h3>
+                <p class="txt-orange">Partial Match</p>
+            </div>
+            <div class="stat-card" onclick="setFilter('Not in Books')" title="जो बुक्स में नहीं चढ़े हैं">
+                <h3 id="cntMissBook" class="txt-purple">0</h3>
+                <p class="txt-purple">Not in Books</p>
+            </div>
+            <div class="stat-card" onclick="setFilter('Not in Portal')" title="जो सप्लायर ने नहीं चढ़ाए">
+                <h3 id="cntMissPortal" class="txt-teal">0</h3>
+                <p class="txt-teal">Not in Portal</p>
+            </div>
+        </div>
+
+        <div class="toolbar" id="toolbar">
+            <div style="font-weight:bold; font-size:14px; color:#555;">🔍 Advanced Filters</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <div class="font-controls">
+                    <span style="font-size:11px; font-weight:bold; color:#555;">Font</span>
+                    <button class="font-btn" onclick="changeFontSize(-1)">-</button>
+                    <span id="fontSizeDisplay"
+                        style="font-size:12px; font-weight:bold; width:20px; text-align:center;">13</span>
+                    <button class="font-btn" onclick="changeFontSize(1)">+</button>
+                </div>
+                <select id="statusFilter" class="filter-box" onchange="filterTables()">
+                    <option value="ALL">📋 All Status (सभी देखें)</option>
+                    <option value="Matched">✅ Matched Only</option>
+                    <option value="Mismatch">⚠️ Mismatch Only</option>
+                    <option value="Partial Mismatch">🟠 Partial Mismatch Only</option>
+                    <option value="Not in Books">⭐ Not in Books Only</option>
+                    <option value="Not in Portal">❌ Not in Portal Only</option>
+                </select>
+                <input type="text" class="search-box" id="searchInput" placeholder="🔍 Search Party, GSTIN..."
+                    onkeyup="filterTables()">
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div id="loadingMsg">Processing... ⏳</div>
+            <table id="masterTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th class="col-sno">S.No.</th>
+                        <th class="col-gstin sortable" onclick="sortData('gstin')">GSTIN ↕️</th>
+                        <th class="col-name">Party Name</th>
+                        <th class="col-status sortable" onclick="sortData('status')">Status ↕️</th>
+                        <th class="col-type">Type</th>
+                        <th class="col-inv">Inv/Vch No.</th>
+                        <th class="col-date sortable" onclick="sortData('date')">Date ↕️</th>
+                        <th class="text-right col-amt sortable" onclick="sortData('amt')">Taxable Amt ↕️</th>
+                        <!-- ✨ IGST, CGST, SGST ARE SAFE AND SECURE HERE -->
+                        <th class="text-right col-amt">IGST</th>
+                        <th class="text-right col-amt">CGST</th>
+                        <th class="text-right col-amt">SGST</th>
+                        <th class="col-remark">Remarks 📝</th> <!-- ✨ NEW COLUMN -->
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+                <tfoot id="tableFoot">
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- ✨ Party Ledger Modal -->
+    <div id="ledgerModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📊 Party Ledger: <span id="lblLedgerParty" style="color:#ffc107;"></span> (<span
+                        id="lblLedgerGstin"></span>)</h2>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="exportLedgerExcel()"
+                        style="background:#28a745; color:#fff; border:none; padding:5px 10px; border-radius:3px; cursor:pointer; font-weight:bold;">📥
+                        Excel</button>
+                    <button onclick="exportLedgerPDF()"
+                        style="background:#e53935; color:#fff; border:none; padding:5px 10px; border-radius:3px; cursor:pointer; font-weight:bold;">📄
+                        PDF</button>
+                    <button class="close-btn" onclick="closeLedger()">✖</button>
+                </div>
+            </div>
+
+            <div class="ledger-stats-box" id="ledgerStatsArea">
+                <!-- Stats injected via JS -->
+            </div>
+
+            <div class="toolbar" style="display:flex; border-top:none;">
+                <select id="ledgerFilter" class="filter-box" onchange="renderLedgerTable()">
+                    <option value="ALL">📋 All Status</option>
+                    <option value="status-matched">✅ Matched</option>
+                    <option value="status-mismatch">⚠️ Mismatch</option>
+                    <option value="status-partial-mismatch">🟠 Partial Match</option>
+                </select>
+                <input type="text" class="search-box" id="ledgerSearch" placeholder="🔍 Search Invoice..."
+                    onkeyup="renderLedgerTable()">
+            </div>
+
+            <div class="ledger-table-wrapper">
+                <table id="ledgerTableMain">
+                    <thead>
+                        <tr>
+                            <th style="width:40px;">S.No.</th>
+                            <th class="sortable" onclick="sortLedger('date')">Date ↕️</th>
+                            <th>Inv No.</th>
+                            <th>Type</th>
+                            <th class="text-right sortable" onclick="sortLedger('b_amt')">Books Amt ↕️</th>
+                            <th class="text-right sortable" onclick="sortLedger('p_amt')">Portal Amt ↕️</th>
+                            <!-- ✨ TAX COLUMNS ARE SAFE HERE TOO -->
+                            <th class="text-right">Books Tax (I+C+S)</th>
+                            <th class="text-right">Portal Tax (I+C+S)</th>
+                            <th class="text-right sortable" onclick="sortLedger('diff')">Difference ↕️</th>
+                            <th>Status</th>
+                            <th>Remarks 📝</th> <!-- ✨ NEW COLUMN -->
+                        </tr>
+                    </thead>
+                    <tbody id="ledgerTableBody"></tbody>
+                    <tfoot id="ledgerTableFoot"></tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ✨ PWA Auto-Install Configuration
+        const manifest = {
+            "name": "Ultimate GST - GSTR-2",
+            "short_name": "GSTR-2",
+            "start_url": window.location.href,
+            "display": "standalone",
+            "background_color": "#f0f4f8",
+            "theme_color": "#0056b3",
+            "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/2830/2830284.png", "sizes": "512x512", "type": "image/png" }]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+        document.getElementById('manifest-link').href = URL.createObjectURL(manifestBlob);
+
+        if ('serviceWorker' in navigator) {
+            const swCode = `self.addEventListener('install', (e) => { self.skipWaiting(); }); self.addEventListener('fetch', (e) => { });`;
+            const swBlob = new Blob([swCode], { type: 'application/javascript' });
+            navigator.serviceWorker.register(URL.createObjectURL(swBlob));
+        }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); deferredPrompt = e;
+            document.getElementById('installAppBtn').style.display = 'inline-block';
+        });
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') { document.getElementById('installAppBtn').style.display = 'none'; }
+                    deferredPrompt = null;
+                });
+            }
+        }
+
+        let masterData = [];
+        let totals = { books: { tx: 0, igst: 0, cgst: 0, sgst: 0 }, portal: { tx: 0, igst: 0, cgst: 0, sgst: 0 } };
+        let currentFontSize = 13;
+        let sortAsc = true;
+        let selectedPortalFiles = [];
+
+        // GSTR-2 Specific Keys
+        let customNamesDB = JSON.parse(localStorage.getItem('gstr2_custom_names') || '{}');
+        let remarksDB = JSON.parse(localStorage.getItem('gstr2_remarks_db') || '{}');
+
+        // ✨ Feature 4: Add Remark Function
+        function addRemark(key) {
+            let current = remarksDB[key] || "";
+            let val = prompt("इस परचेज़ बिल के लिए टिप्पणी लिखें (उदा: Will claim next month, Check with supplier):", current);
+            if (val !== null) {
+                remarksDB[key] = val.trim();
+                localStorage.setItem('gstr2_remarks_db', JSON.stringify(remarksDB));
+                renderMasterTable();
+                if (document.getElementById('ledgerModal').style.display === 'flex') {
+                    renderLedgerTable();
+                }
+            }
+        }
+
+        // ✨ Feature 3: Backup Database
+        async function exportBackup() {
+            try {
+                let bData = await localforage.getItem('gstr2_recon_books') || [];
+                let pData = await localforage.getItem('gstr2_recon_portal') || [];
+                let names = localStorage.getItem('gstr2_custom_names') || '{}';
+                let remarks = localStorage.getItem('gstr2_remarks_db') || '{}';
+
+                if (bData.length === 0 && pData.length === 0) {
+                    alert("बैकअप के लिए कोई डेटा नहीं है!"); return;
+                }
+
+                let backup = { books: bData, portal: pData, names: names, remarks: remarks, timestamp: new Date().toISOString() };
+                let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup));
+                let downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", "GST_Backup_GSTR2_" + new Date().getTime() + ".json");
+                document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove();
+            } catch (e) { alert("Error saving backup."); console.error(e); }
+        }
+
+        // ✨ Feature 3: Restore Database
+        function triggerRestore() { document.getElementById('restoreInput').click(); }
+        async function handleRestore(event) {
+            let file = event.target.files[0];
+            if (!file) return;
+            let reader = new FileReader();
+            reader.onload = async function (e) {
+                try {
+                    let backup = JSON.parse(e.target.result);
+                    if (backup.books) await localforage.setItem('gstr2_recon_books', backup.books);
+                    if (backup.portal) await localforage.setItem('gstr2_recon_portal', backup.portal);
+                    if (backup.names) localStorage.setItem('gstr2_custom_names', backup.names);
+                    if (backup.remarks) localStorage.setItem('gstr2_remarks_db', backup.remarks);
+
+                    alert("✅ डेटाबेस सफलतापूर्वक रिस्टोर हो गया! (Purchase Database Restored!) पेज रीफ्रेश हो रहा है...");
+                    location.reload();
+                } catch (err) { alert("⚠️ गलत बैकअप फाइल! (Invalid File)"); }
+            };
+            reader.readAsText(file);
+        }
+
+        function saveCustomName(gstin) {
+            let currentName = customNamesDB[gstin] || "";
+            let newName = prompt("कृपया GSTIN " + gstin + " के लिए पार्टी का नाम पेस्ट करें:", currentName);
+            if (newName !== null && newName.trim() !== "") {
+                customNamesDB[gstin] = newName.trim().toUpperCase();
+                localStorage.setItem('gstr2_custom_names', JSON.stringify(customNamesDB));
+                renderMasterTable();
+            }
+        }
+
+        function getNameHtml(name, gstin) {
+            let finalName = customNamesDB[gstin] || name;
+            let findBtn = '';
+            if (!finalName || finalName === '-' || finalName.trim() === '') {
+                finalName = '-';
+                findBtn = `<a href="https://www.google.com/search?q=GSTIN+${gstin}" target="_blank" class="btn-find-gst" title="Google पर नाम सर्च करें">🔍 Find</a>`;
+            }
+            let editBtn = `<span class="btn-edit" onclick="saveCustomName('${gstin}')" title="नाम पेस्ट या एडिट करें">✏️</span>`;
+            return `<div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span><a class="gstin-link" style="text-decoration:none;" onclick="openLedger('${gstin}')" title="View Party Ledger">${finalName}</a> ${findBtn}</span> ${editBtn}</div>`;
+        }
+
+        function showUploadPanel() {
+            document.getElementById('controlPanel').style.display = 'flex';
+            document.getElementById('masterTable').style.display = 'none';
+            document.getElementById('toolbar').style.display = 'none';
+            document.getElementById('summaryDashboard').style.display = 'none';
+            document.getElementById('exportBtn').style.display = 'none';
+            document.getElementById('addMoreBtn').style.display = 'none';
+        }
+
+        window.onload = async function () {
+            if (localStorage.getItem('gst_dark_mode') === 'true') {
+                document.body.classList.add('dark-mode');
+                let themeBtn = document.getElementById('themeToggleBtn');
+                if (themeBtn) themeBtn.innerHTML = '☀️ Light Mode';
+            }
+            try {
+                let savedBooks = await localforage.getItem('gstr2_recon_books');
+                let savedPortal = await localforage.getItem('gstr2_recon_portal');
+
+                if (savedBooks && savedPortal && savedBooks.length > 0 && savedPortal.length > 0) {
+                    document.getElementById('controlPanel').style.display = 'none';
+                    document.getElementById('sessionMsg').style.display = 'block';
+                    document.getElementById('loadingMsg').innerText = "Restoring Database... ⏳";
+                    document.getElementById('loadingMsg').style.display = 'block';
+
+                    setTimeout(() => {
+                        compareData(savedBooks, savedPortal);
+                        document.getElementById('sessionMsg').style.display = 'none';
+                    }, 500);
+                }
+            } catch (e) {
+                console.error("Old data corrupted, starting fresh.", e);
+                await localforage.removeItem('gstr2_recon_books');
+                await localforage.removeItem('gstr2_recon_portal');
+            }
+        };
+
+        async function clearSession() {
+            if (confirm("Are you sure you want to clear all data? (Your Remarks & Party names will be kept safe)")) {
+                await localforage.removeItem('gstr2_recon_books');
+                await localforage.removeItem('gstr2_recon_portal');
+                location.reload();
+            }
+        }
+
+        function setFilter(statusValue) {
+            document.getElementById("statusFilter").value = statusValue;
+            filterTables();
+        }
+
+        async function handlePortalFilesSelect(event) {
+            const newFiles = Array.from(event.target.files);
+            if (newFiles.length === 0) return;
+
+            document.getElementById('uploadedMonthsArea').innerHTML = '<span style="color:#0056b3;">Extracting Files... ⏳</span>';
+
+            for (let newFile of newFiles) {
+                if (newFile.name.toLowerCase().endsWith('.zip')) {
+                    try {
+                        const zip = new JSZip();
+                        const zipData = await zip.loadAsync(newFile);
+
+                        for (let filename in zipData.files) {
+                            if (!zipData.files[filename].dir && filename.toLowerCase().endsWith('.json')) {
+                                const jsonText = await zipData.files[filename].async("string");
+                                const uniqueName = newFile.name.replace('.zip', '') + "_extracted_" + filename;
+                                const extractedFile = new File([jsonText], uniqueName, { type: "application/json" });
+
+                                if (!selectedPortalFiles.some(f => f.name === extractedFile.name)) {
+                                    selectedPortalFiles.push(extractedFile);
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error("ZIP Error:", e);
+                        alert("⚠️ ZIP फाइल खोलने में दिक्कत आई: " + newFile.name);
+                    }
+                } else {
+                    if (!selectedPortalFiles.some(f => f.name === newFile.name)) {
+                        selectedPortalFiles.push(newFile);
+                    }
+                }
+            }
+            event.target.value = '';
+            await updatePortalFilesUI();
+        }
+
+        async function updatePortalFilesUI() {
+            let uiContainer = document.getElementById('uploadedMonthsArea');
+            if (selectedPortalFiles.length === 0) {
+                uiContainer.innerHTML = '<span style="color:#78909c;">No portal files selected yet.</span>';
+                return;
+            }
+            uiContainer.innerHTML = '<span style="color:#0056b3;">Reading files... ⏳</span>';
+
+            let monthsFound = new Set();
+            let hasExcel = false;
+            for (let file of selectedPortalFiles) {
+                if (file.name.toLowerCase().endsWith('.json')) {
+                    try {
+                        let text = await readFileAsText(file);
+                        let json = JSON.parse(text);
+                        let period = json.rtnprd || (json.data && json.data.rtnprd);
+                        if (period) monthsFound.add(formatPeriod(period));
+                    } catch (e) {
+                        console.error("JSON Parse Error in: " + file.name, e);
+                        alert(`⚠️ फाइल एरर: '${file.name}' करप्ट (Corrupt) है या सही JSON फॉर्मेट में नहीं है। कृपया पोर्टल से इसे दोबारा डाउनलोड करें।`);
+                    }
+                } else { hasExcel = true; }
+            }
+
+            let html = `<div style="margin-bottom: 5px;"><strong>Total Files: ${selectedPortalFiles.length}</strong></div>`;
+            if (monthsFound.size > 0) {
+                html += `<div>`;
+                monthsFound.forEach(m => { html += `<span class="month-badge">${m}</span>`; });
+                html += `</div>`;
+            }
+            if (hasExcel) html += `<div style="color:#e65100; font-weight:bold; font-size:11px; margin-top:3px;">* Includes Excel/CSV files</div>`;
+            html += `<button class="btn-clear" onclick="clearPortalFiles()">🗑️ Clear All Portal Files</button>`;
+            uiContainer.innerHTML = html;
+        }
+
+        function readFileAsText(file) {
+            return new Promise((resolve, reject) => {
+                let reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = e => reject(e);
+                reader.readAsText(file);
+            });
+        }
+
+        function clearPortalFiles() {
+            selectedPortalFiles = [];
+            document.getElementById('portalFile').value = '';
+            updatePortalFilesUI();
+        }
+
+        function changeFontSize(change) {
+            currentFontSize += change;
+            if (currentFontSize < 9) currentFontSize = 9;
+            if (currentFontSize > 20) currentFontSize = 20;
+            document.getElementById('masterTable').style.fontSize = currentFontSize + 'px';
+            document.getElementById('fontSizeDisplay').innerText = currentFontSize;
+        }
+
+        function initResizableColumns() {
+            const ths = document.querySelectorAll('#masterTable th');
+            ths.forEach(th => {
+                let existing = th.querySelector('.resizer');
+                if (existing) existing.remove();
+                const resizer = document.createElement('div');
+                resizer.classList.add('resizer');
+                th.appendChild(resizer);
+                createResizableColumn(th, resizer);
+            });
+        }
+
+        function createResizableColumn(th, resizer) {
+            let x = 0, w = 0;
+            const mouseDownHandler = function (e) {
+                x = e.clientX;
+                w = parseInt(window.getComputedStyle(th).width, 10);
+                document.addEventListener('mousemove', mouseMoveHandler);
+                document.addEventListener('mouseup', mouseUpHandler);
+                resizer.classList.add('resizing');
+            };
+            const mouseMoveHandler = function (e) { th.style.width = `${w + (e.clientX - x)}px`; };
+            const mouseUpHandler = function () {
+                resizer.classList.remove('resizing');
+                document.removeEventListener('mousemove', mouseMoveHandler);
+                document.removeEventListener('mouseup', mouseUpHandler);
+            };
+            resizer.addEventListener('mousedown', mouseDownHandler);
+        }
+
+        function findValue(row, keywords) {
+            if (!row || typeof row !== 'object') return '';
+            for (let key in row) {
+                let val = row[key];
+                if (val === '' || val === null || val === undefined) continue;
+                let cleanKey = key.toString().toLowerCase().replace(/[^a-z]/g, '');
+                for (let kw of keywords) { if (cleanKey === kw) return val; }
+            }
+            for (let key in row) {
+                let val = row[key];
+                if (val === '' || val === null || val === undefined) continue;
+                let cleanKey = key.toString().toLowerCase().replace(/[^a-z]/g, '');
+                for (let kw of keywords) { if (cleanKey.includes(kw)) return val; }
+            }
+            return '';
+        }
+
+        function findName(row) {
+            if (!row || typeof row !== 'object') return '';
+            for (let key in row) {
+                let cleanKey = key.toString().toLowerCase().replace(/[^a-z]/g, '');
+                if ((cleanKey.includes('name') || cleanKey.includes('party') || cleanKey.includes('trade') || cleanKey.includes('customer') || cleanKey.includes('buyer')) && !cleanKey.includes('gst')) return row[key];
+            }
+            return '';
+        }
+
+        function normalize(str) { return str ? str.toString().toUpperCase().replace(/[^A-Z0-9]/g, '') : ''; }
+        function extractNumber(str) { return str ? str.toString().replace(/[^0-9]/g, '').replace(/^0+/, '') : ''; }
+
+        function cleanDate(dateStr) { return dateStr ? String(dateStr).split(' ')[0].trim() : "-"; }
+        function formatMoney(amt) { return parseFloat(amt || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+        function formatPeriod(rtnprd) {
+            if (!rtnprd || rtnprd.length !== 6) return rtnprd;
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            let m = parseInt(rtnprd.substring(0, 2)) - 1;
+            let y = rtnprd.substring(4, 6);
+            return months[m] + "-" + y;
+        }
+
+        function flattenGSTJson(jsonObj) {
+            let flatList = [];
+            function extractInvoices(obj, currentSupplierGstin = "", currentSupplierName = "") {
+                if (!obj) return;
+                if (Array.isArray(obj)) {
+                    obj.forEach(item => extractInvoices(item, currentSupplierGstin, currentSupplierName));
+                } else if (typeof obj === 'object') {
+                    let gstin = obj.ctin || obj.gstin || currentSupplierGstin;
+                    let name = obj.trdnm || obj.lgl_nm || currentSupplierName;
+                    if (obj.inum || obj.inv_no) {
+                        let txval = 0, igst = 0, cgst = 0, sgst = 0, rate = 0;
+                        if (obj.itms && Array.isArray(obj.itms)) {
+                            obj.itms.forEach(itm => {
+                                if (itm.itm_det) {
+                                    txval += parseFloat(itm.itm_det.txval || 0);
+                                    igst += parseFloat(itm.itm_det.iamt !== undefined ? itm.itm_det.iamt : (itm.itm_det.igst || 0));
+                                    cgst += parseFloat(itm.itm_det.camt !== undefined ? itm.itm_det.camt : (itm.itm_det.cgst || 0));
+                                    sgst += parseFloat(itm.itm_det.samt !== undefined ? itm.itm_det.samt : (itm.itm_det.sgst || 0));
+                                    rate = parseFloat(itm.itm_det.rt || rate);
+                                }
+                            });
+                        } else {
+                            txval = parseFloat(obj.txval || obj.val || 0);
+                            igst = parseFloat(obj.iamt !== undefined ? obj.iamt : (obj.igst || 0));
+                            cgst = parseFloat(obj.camt !== undefined ? obj.camt : (obj.cgst || 0));
+                            sgst = parseFloat(obj.samt !== undefined ? obj.samt : (obj.sgst || 0));
+                            rate = parseFloat(obj.rt || rate);
+                        }
+                        flatList.push({ gstin: gstin, name: name, inv: obj.inum || obj.inv_no, date: obj.dt || '', amt: txval, igst: igst, cgst: cgst, sgst: sgst, rt: rate });
+                    } else {
+                        for (let key in obj) if (typeof obj[key] === 'object') extractInvoices(obj[key], gstin, name);
+                    }
+                }
+            }
+            extractInvoices(jsonObj);
+            return flatList;
+        }
+
+        async function parseFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                if (file.name.toLowerCase().endsWith('.json')) {
+                    reader.onload = (e) => {
+                        try {
+                            resolve(flattenGSTJson(JSON.parse(e.target.result)));
+                        } catch (error) {
+                            alert(`⚠️ डेटा एरर: '${file.name}' का अंदरूनी फॉर्मेट खराब है। यह फाइल प्रोसेस नहीं हो सकती।`);
+                            reject(new Error("JSON Parse Error in: " + file.name));
+                        }
+                    };
+                    reader.readAsText(file);
+                } else {
+                    reader.onload = (e) => {
+                        try {
+                            const data = new Uint8Array(e.target.result);
+                            const workbook = XLSX.read(data, { type: 'array' });
+                            let targetSheetName = workbook.SheetNames.find(n => n.toLowerCase().includes('b2b') || n.toLowerCase().includes('pur')) || workbook.SheetNames[0];
+                            const worksheet = workbook.Sheets[targetSheetName];
+                            const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", raw: false });
+
+                            let headerRowIndex = 0;
+                            for (let i = 0; i < Math.min(rawRows.length, 15); i++) {
+                                let str = (rawRows[i] || []).join(" ").toLowerCase();
+                                if (str.includes("gstin") && (str.includes("inv") || str.includes("vch"))) { headerRowIndex = i; break; }
+                            }
+                            let headers = rawRows[headerRowIndex] || [], finalJson = [];
+                            for (let i = headerRowIndex + 1; i < rawRows.length; i++) {
+                                let rowObj = {}, hasData = false;
+                                for (let j = 0; j < headers.length; j++) {
+                                    if (headers[j]) { rowObj[headers[j]] = rawRows[i][j]; if (rawRows[i][j] !== "") hasData = true; }
+                                }
+                                if (hasData) finalJson.push(rowObj);
+                            }
+                            resolve(finalJson);
+                        } catch (error) { reject(new Error("Excel Read Error")); }
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+            });
+        }
+
+        function createRecord(gstin, name, type, inv, date, amt, igst, cgst, sgst) {
+            return { gstin: gstin || '-', name: name || '-', type: type || 'B2B', inv: inv || '-', date: cleanDate(date), amt: parseFloat(amt || 0), igst: parseFloat(igst || 0), cgst: parseFloat(cgst || 0), sgst: parseFloat(sgst || 0) };
+        }
+
+        async function processFiles() {
+            const bFile = document.getElementById('booksFile').files[0];
+
+            let existingBooks = await localforage.getItem('gstr2_recon_books') || [];
+            let existingPortal = await localforage.getItem('gstr2_recon_portal') || [];
+
+            if (!bFile && existingBooks.length === 0) {
+                alert("कृपया बुक्स की फाइल अपलोड करें!");
+                return;
+            }
+            if (selectedPortalFiles.length === 0 && existingPortal.length === 0) {
+                alert("कृपया पोर्टल की फाइलें अपलोड करें!");
+                return;
+            }
+
+            document.getElementById('loadingMsg').style.display = "block";
+            document.getElementById('masterTable').style.display = "none";
+            document.getElementById('toolbar').style.display = "none";
+            document.getElementById('summaryDashboard').style.display = "none";
+            document.getElementById('controlPanel').style.display = "none";
+
+            try {
+                let finalBooksData = existingBooks;
+                if (bFile) {
+                    document.getElementById('loadingMsg').innerText = "Reading Books Data... ⏳";
+                    finalBooksData = await parseFile(bFile);
+                }
+
+                let newPortalData = [];
+                for (let i = 0; i < selectedPortalFiles.length; i++) {
+                    document.getElementById('loadingMsg').innerText = `Processing Portal file ${i + 1} / ${selectedPortalFiles.length} ... ⏳`;
+                    let pData = await parseFile(selectedPortalFiles[i]);
+                    newPortalData = newPortalData.concat(pData);
+                }
+
+                let finalPortalData = existingPortal.concat(newPortalData);
+
+                document.getElementById('loadingMsg').innerText = "Saving to IndexedDB securely... ⏳";
+                try {
+                    await localforage.setItem('gstr2_recon_books', finalBooksData);
+                    await localforage.setItem('gstr2_recon_portal', finalPortalData);
+                } catch (e) {
+                    console.warn("Database storage issue encountered.", e);
+                }
+
+                document.getElementById('booksFile').value = '';
+                clearPortalFiles();
+
+                document.getElementById('loadingMsg').innerText = "Comparing matching records... ⏳";
+                setTimeout(() => compareData(finalBooksData, finalPortalData), 50);
+
+            } catch (err) {
+                console.error(err);
+                alert("⚠️ Error: फाइल का फॉर्मेट गलत है या डेटा पढ़ने में दिक्कत आई है!");
+                document.getElementById('loadingMsg').style.display = "none";
+                document.getElementById('controlPanel').style.display = 'flex';
+            }
+        }
+
+        function compareData(booksData, portalData) {
+            masterData = [];
+            totals = { books: { tx: 0, igst: 0, cgst: 0, sgst: 0 }, portal: { tx: 0, igst: 0, cgst: 0, sgst: 0 } };
+            const booksMap = new Map();
+
+            booksData.forEach(bRow => {
+                const bGstin = findValue(bRow, ['gstin', 'gstno', 'gst', 'uin', 'supplier', 'party', 'vendor']);
+                const bInvNo = findValue(bRow, ['invoice', 'inv', 'voucher', 'vch', 'bill']);
+                const bType = findValue(bRow, ['type', 'voucher type', 'doc type']) || 'B2B';
+
+                if (bGstin && bInvNo) {
+                    const key = normalize(bGstin) + "_" + normalize(bInvNo);
+                    const amt = parseFloat(findValue(bRow, ['taxable', 'txval', 'amount']) || 0);
+                    const igst = parseFloat(findValue(bRow, ['igst', 'integrated']) || 0);
+                    const cgst = parseFloat(findValue(bRow, ['cgst', 'central']) || 0);
+                    const sgst = parseFloat(findValue(bRow, ['sgst', 'state', 'ut']) || 0);
+
+                    if (booksMap.has(key)) {
+                        let existing = booksMap.get(key);
+                        existing.amt += amt; existing.igst += igst; existing.cgst += cgst; existing.sgst += sgst;
+                    } else {
+                        booksMap.set(key, { gstin: bGstin, name: findName(bRow) || '', type: bType, inv: bInvNo, date: findValue(bRow, ['date', 'dt']), amt: amt, igst: igst, cgst: cgst, sgst: sgst });
+                    }
+                }
+            });
+
+            let gstinBooksMap = {};
+            for (let [bKey, bMerged] of booksMap.entries()) {
+                let normGstin = normalize(bMerged.gstin);
+                if (!gstinBooksMap[normGstin]) gstinBooksMap[normGstin] = [];
+                gstinBooksMap[normGstin].push({ key: bKey, data: bMerged });
+            }
+
+            let unmatchedPortal = [];
+            portalData.forEach(pRow => {
+                const pGstin = pRow.gstin || findValue(pRow, ['gstin', 'ctin', 'gstno', 'gst', 'supplier']);
+                const pInvNo = pRow.inv || findValue(pRow, ['invoice', 'inv', 'inum']);
+                const pType = pRow.typ || findValue(pRow, ['type', 'typ', 'doc']) || 'B2B';
+
+                if (!pGstin || !pInvNo) return;
+
+                const pObj = createRecord(pGstin, pRow.name || findName(pRow), pType, pInvNo, pRow.date || findValue(pRow, ['date', 'dt']),
+                    pRow.amt || findValue(pRow, ['taxable', 'txval', 'val', 'amount']), pRow.igst || findValue(pRow, ['igst', 'integrated', 'iamt']),
+                    pRow.cgst || findValue(pRow, ['cgst', 'central', 'camt']), pRow.sgst || findValue(pRow, ['sgst', 'state', 'ut', 'samt']));
+
+                totals.portal.tx += pObj.amt; totals.portal.igst += pObj.igst; totals.portal.cgst += pObj.cgst; totals.portal.sgst += pObj.sgst;
+
+                const exactKey = normalize(pGstin) + "_" + normalize(pInvNo);
+
+                if (booksMap.has(exactKey)) {
+                    const bMerged = booksMap.get(exactKey);
+                    const bObj = createRecord(bMerged.gstin, bMerged.name || pObj.name, bMerged.type, bMerged.inv, bMerged.date, bMerged.amt, bMerged.igst, bMerged.cgst, bMerged.sgst);
+                    totals.books.tx += bObj.amt; totals.books.igst += bObj.igst; totals.books.cgst += bObj.cgst; totals.books.sgst += bObj.sgst;
+
+                    let status = Math.abs(pObj.amt - bObj.amt) <= 1.0 ? 'status-matched' : 'status-mismatch';
+                    // ✨ Inject Key
+                    masterData.push({ book: bObj, portal: pObj, status: status, name: bObj.name || pObj.name, fuzzy: false, key: exactKey });
+                    booksMap.delete(exactKey);
+                } else {
+                    unmatchedPortal.push(pObj);
+                }
+            });
+
+            unmatchedPortal.forEach(pObj => {
+                let matchedKey = null;
+                let pNorm = normalize(pObj.inv);
+                let pNum = extractNumber(pObj.inv);
+                let pGstinNorm = normalize(pObj.gstin);
+
+                let possibleMatches = gstinBooksMap[pGstinNorm];
+
+                if (possibleMatches) {
+                    for (let i = 0; i < possibleMatches.length; i++) {
+                        let bKey = possibleMatches[i].key;
+                        let bMerged = possibleMatches[i].data;
+
+                        if (booksMap.has(bKey)) {
+                            let bNorm = normalize(bMerged.inv);
+                            let bNum = extractNumber(bMerged.inv);
+
+                            if (Math.abs(pObj.amt - bMerged.amt) <= 1.0) {
+                                if ((pNum !== '' && pNum === bNum) || pNorm.includes(bNorm) || bNorm.includes(pNorm)) {
+                                    matchedKey = bKey;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                const exactKey = normalize(pObj.gstin) + "_" + normalize(pObj.inv);
+                if (matchedKey) {
+                    const bMerged = booksMap.get(matchedKey);
+                    const bObj = createRecord(bMerged.gstin, bMerged.name || pObj.name, bMerged.type, bMerged.inv, bMerged.date, bMerged.amt, bMerged.igst, bMerged.cgst, bMerged.sgst);
+                    totals.books.tx += bObj.amt; totals.books.igst += bObj.igst; totals.books.cgst += bObj.cgst; totals.books.sgst += bObj.sgst;
+
+                    // ✨ Inject Key
+                    masterData.push({ book: bObj, portal: pObj, status: 'status-partial-mismatch', name: bObj.name || pObj.name, fuzzy: true, key: matchedKey });
+                    booksMap.delete(matchedKey);
+                } else {
+                    masterData.push({ book: null, portal: pObj, status: 'status-missing-book', name: pObj.name, fuzzy: false, key: exactKey });
+                }
+            });
+
+            booksMap.forEach((bMerged, bKey) => {
+                const bObj = createRecord(bMerged.gstin, bMerged.name, bMerged.type, bMerged.inv, bMerged.date, bMerged.amt, bMerged.igst, bMerged.cgst, bMerged.sgst);
+                totals.books.tx += bObj.amt; totals.books.igst += bObj.igst; totals.books.cgst += bObj.cgst; totals.books.sgst += bObj.sgst;
+                masterData.push({ book: bObj, portal: null, status: 'status-missing-portal', name: bObj.name, fuzzy: false, key: bKey });
+            });
+
+            masterData.sort((a, b) => {
+                let nameA = customNamesDB[a.book ? a.book.gstin : a.portal.gstin] || a.name || "";
+                let nameB = customNamesDB[b.book ? b.book.gstin : b.portal.gstin] || b.name || "";
+                return nameA.localeCompare(nameB);
+            });
+
+            renderMasterTable();
+        }
+
+        function sortData(field) {
+            function getSortableDate(dStr) {
+                if (!dStr || dStr === '-') return "00000000";
+                let p = dStr.split(/[-/.]/);
+                if (p.length >= 3) {
+                    let d = p[0].padStart(2, '0');
+                    let m = p[1].toLowerCase();
+                    let y = p[2];
+                    if (y.length === 2) y = "20" + y;
+
+                    const mMap = { jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06', jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12' };
+                    if (isNaN(m)) m = mMap[m.substring(0, 3)] || '00';
+                    else m = m.padStart(2, '0');
+
+                    return y + m + d;
+                }
+                return "00000000";
+            }
+
+            masterData.sort((a, b) => {
+                let recA = a.book || a.portal;
+                let recB = b.book || b.portal;
+
+                let valA, valB;
+
+                if (field === 'status') {
+                    valA = a.status; valB = b.status;
+                } else if (field === 'gstin') {
+                    valA = recA.gstin; valB = recB.gstin;
+                } else if (field === 'amt') {
+                    valA = recA.amt; valB = recB.amt;
+                } else if (field === 'date') {
+                    valA = getSortableDate(recA.date);
+                    valB = getSortableDate(recB.date);
+                }
+
+                if (valA < valB) return sortAsc ? -1 : 1;
+                if (valA > valB) return sortAsc ? 1 : -1;
+                return 0;
+            });
+
+            sortAsc = !sortAsc;
+            renderMasterTable();
+        }
+
+        function getDiffHtml(bVal, pVal) {
+            let diff = bVal - pVal;
+            if (Math.abs(diff) < 0.01) return `0.00`;
+            let colorClass = diff < 0 ? 'color: #d32f2f;' : 'color: #2e7d32;';
+            let sign = diff > 0 ? '+' : '';
+            return `<span style="${colorClass}">${sign}${formatMoney(diff)}</span>`;
+        }
+
+        function updateDashboardCounts() {
+            let counts = { total: masterData.length, matched: 0, mismatch: 0, partial: 0, missBook: 0, missPortal: 0 };
+
+            masterData.forEach(item => {
+                if (item.status === 'status-matched') counts.matched++;
+                else if (item.status === 'status-mismatch') counts.mismatch++;
+                else if (item.status === 'status-partial-mismatch') counts.partial++;
+                else if (item.status === 'status-missing-book') counts.missBook++;
+                else if (item.status === 'status-missing-portal') counts.missPortal++;
+            });
+
+            document.getElementById('cntTotal').innerText = counts.total;
+            document.getElementById('cntMatched').innerText = counts.matched;
+            document.getElementById('cntMismatch').innerText = counts.mismatch;
+            document.getElementById('cntPartial').innerText = counts.partial;
+            document.getElementById('cntMissBook').innerText = counts.missBook;
+            document.getElementById('cntMissPortal').innerText = counts.missPortal;
+
+            document.getElementById('summaryDashboard').style.display = "flex";
+        }
+
+        function renderMasterTable() {
+            let html = '';
+            let visibleSNo = 1;
+            let isEven = false;
+
+            updateDashboardCounts();
+
+            masterData.forEach((item, index) => {
+                let p = item.portal;
+                let b = item.book;
+                let bgClass = isEven ? 'group-even' : 'group-odd';
+                isEven = !isEven;
+
+                let rowColor = "#333";
+                let statusText = "";
+
+                if (item.status === 'status-matched') { rowColor = "#0056b3"; statusText = "Matched"; }
+                else if (item.status === 'status-mismatch') { rowColor = "#d32f2f"; statusText = "Mismatch"; }
+                else if (item.status === 'status-partial-mismatch') { rowColor = "#d84315"; statusText = "Partial Mismatch"; }
+                else if (item.status === 'status-missing-book') { rowColor = "#9c27b0"; statusText = "Not in Books"; }
+                else if (item.status === 'status-missing-portal') { rowColor = "#00897b"; statusText = "Not in Portal"; }
+
+                let trStyle = `color: ${rowColor}; font-weight: 600;`;
+                let rowMeta = `data-group="grp_${index}" data-status="${statusText}"`;
+                let fuzzyBadge = item.fuzzy ? `<span class="fuzzy-tag" title="Inv. Number Mismatch">Inv Error</span>` : "";
+
+                let currentRemark = remarksDB[item.key] || '➕ Add Note';
+
+                if (b && p) {
+                    html += `<tr ${rowMeta} class="row-books ${bgClass}" style="${trStyle}">
+                  <td class="col-sno-val text-center">${visibleSNo++}</td>
+                   <td class="gstin-link" onclick="openLedger('${b.gstin}')" title="View Ledger">${b.gstin}</td>
+                    <td>${getNameHtml(b.name, b.gstin)}</td>
+                    <td>${statusText} ${fuzzyBadge}</td>
+                    <td class="text-center">
+                        <div class="source-tag" style="color:#0056b3;">Books</div>
+                        <span style="background:#e9ecef; color:#555; font-size:10px; padding:1px 5px; border-radius:3px;">${b.type}</span>
+                    </td>
+                    <td>${b.inv}</td>
+                    <td>${b.date}</td>
+                    <td class="text-right">${formatMoney(b.amt)}</td>
+                    <td class="text-right">${formatMoney(b.igst)}</td>
+                    <td class="text-right">${formatMoney(b.cgst)}</td>
+                    <td class="text-right">${formatMoney(b.sgst)}</td>
+                    <td><span class="remark-cell" onclick="addRemark('${item.key}')" title="${currentRemark !== '➕ Add Note' ? currentRemark : ''}">${currentRemark}</span></td>
+                </tr>`;
+                    html += `<tr ${rowMeta} class="row-portal ${bgClass}" style="${trStyle}">
+                    <td></td>
+                    <td></td><td></td><td></td>
+                    <td class="text-center">
+                        <div class="source-tag" style="color:#00897b;">Portal</div>
+                        <span style="background:#e9ecef; color:#555; font-size:10px; padding:1px 5px; border-radius:3px;">${p.type}</span>
+                    </td>
+                    <td>${p.inv}</td>
+                    <td>${p.date}</td>
+                    <td class="text-right">${formatMoney(p.amt)}</td>
+                    <td class="text-right">${formatMoney(p.igst)}</td>
+                    <td class="text-right">${formatMoney(p.cgst)}</td>
+                    <td class="text-right">${formatMoney(p.sgst)}</td>
+                    <td></td>
+                </tr>`;
+                }
+                else if (b && !p) {
+                    html += `<tr ${rowMeta} class="${bgClass}" style="${trStyle}">
+                   <td class="col-sno-val text-center">${visibleSNo++}</td>
+                   <td class="gstin-link" onclick="openLedger('${b.gstin}')" title="View Ledger">${b.gstin}</td>
+                    <td>${getNameHtml(b.name, b.gstin)}</td>
+                    <td>${statusText}</td>
+                    <td class="text-center">
+                        <div class="source-tag" style="color:#0056b3;">Books</div>
+                        <span style="background:#e9ecef; color:#555; font-size:10px; padding:1px 5px; border-radius:3px;">${b.type}</span>
+                    </td>
+                    <td>${b.inv}</td>
+                    <td>${b.date}</td>
+                    <td class="text-right">${formatMoney(b.amt)}</td>
+                    <td class="text-right">${formatMoney(b.igst)}</td>
+                    <td class="text-right">${formatMoney(b.cgst)}</td>
+                    <td class="text-right">${formatMoney(b.sgst)}</td>
+                    <td><span class="remark-cell" onclick="addRemark('${item.key}')" title="${currentRemark !== '➕ Add Note' ? currentRemark : ''}">${currentRemark}</span></td>
+                </tr>`;
+                }
+                else if (!b && p) {
+                    html += `<tr ${rowMeta} class="${bgClass}" style="${trStyle}">
+                   <td class="col-sno-val text-center">${visibleSNo++}</td>
+                   <td class="gstin-link" onclick="openLedger('${p.gstin}')" title="View Ledger">${p.gstin}</td>
+                    <td>${getNameHtml(p.name, p.gstin)}</td>
+                    <td>${statusText}</td>
+                    <td class="text-center">
+                        <div class="source-tag" style="color:#00897b;">Portal</div>
+                        <span style="background:#e9ecef; color:#555; font-size:10px; padding:1px 5px; border-radius:3px;">${p.type}</span>
+                    </td>
+                    <td>${p.inv}</td>
+                    <td>${p.date}</td>
+                    <td class="text-right">${formatMoney(p.amt)}</td>
+                    <td class="text-right">${formatMoney(p.igst)}</td>
+                    <td class="text-right">${formatMoney(p.cgst)}</td>
+                    <td class="text-right">${formatMoney(p.sgst)}</td>
+                    <td><span class="remark-cell" onclick="addRemark('${item.key}')" title="${currentRemark !== '➕ Add Note' ? currentRemark : ''}">${currentRemark}</span></td>
+                </tr>`;
+                }
+                html += `<tr ${rowMeta} class="spacer-row ${bgClass}"><td colspan="12"></td></tr>`;
+            });
+
+            document.getElementById('tableBody').innerHTML = html;
+
+            let footHtml = `
+            <tr class="total-row">
+                <td colspan="7" class="text-right">Grand Total (Books Data)</td>
+                <td class="text-right">${formatMoney(totals.books.tx)}</td>
+                <td class="text-right">${formatMoney(totals.books.igst)}</td>
+                <td class="text-right">${formatMoney(totals.books.cgst)}</td>
+                <td class="text-right">${formatMoney(totals.books.sgst)}</td>
+                <td></td>
+            </tr>
+            <tr class="total-row">
+                <td colspan="7" class="text-right">Grand Total (GST Portal)</td>
+                <td class="text-right">${formatMoney(totals.portal.tx)}</td>
+                <td class="text-right">${formatMoney(totals.portal.igst)}</td>
+                <td class="text-right">${formatMoney(totals.portal.cgst)}</td>
+                <td class="text-right">${formatMoney(totals.portal.sgst)}</td>
+                <td></td>
+            </tr>
+            <tr class="total-row diff-row">
+                <td colspan="7" class="text-right">Difference (Books - Portal)</td>
+                <td class="text-right">${getDiffHtml(totals.books.tx, totals.portal.tx)}</td>
+                <td class="text-right">${getDiffHtml(totals.books.igst, totals.portal.igst)}</td>
+                <td class="text-right">${getDiffHtml(totals.books.cgst, totals.portal.cgst)}</td>
+                <td class="text-right">${getDiffHtml(totals.books.sgst, totals.portal.sgst)}</td>
+                <td></td>
+            </tr>`;
+            document.getElementById('tableFoot').innerHTML = footHtml;
+
+            document.getElementById('loadingMsg').style.display = "none";
+            document.getElementById('masterTable').style.display = "table";
+            document.getElementById('toolbar').style.display = "flex";
+            document.getElementById('exportBtn').style.display = "block";
+            document.getElementById('exportPdfBtn').style.display = "block";
+            document.getElementById('addMoreBtn').style.display = "inline-block";
+
+            initResizableColumns();
+            filterTables();
+        }
+
+        function filterTables() {
+            let searchInput = document.getElementById("searchInput").value.toUpperCase();
+            let statusFilter = document.getElementById("statusFilter").value;
+            let trs = document.getElementById("tableBody").getElementsByTagName("tr");
+
+            let validGroups = new Set();
+
+            for (let i = 0; i < trs.length; i++) {
+                let tr = trs[i];
+                let gId = tr.getAttribute("data-group");
+                let rStatus = tr.getAttribute("data-status");
+
+                if (gId) {
+                    let textMatch = (tr.textContent || tr.innerText).toUpperCase().indexOf(searchInput) > -1;
+                    let statusMatch = (statusFilter === "ALL" || rStatus === statusFilter);
+
+                    if (textMatch && statusMatch) {
+                        validGroups.add(gId);
+                    }
+                }
+            }
+
+            let snoCounter = 1;
+            let seenGroups = new Set();
+
+            for (let i = 0; i < trs.length; i++) {
+                let tr = trs[i];
+                let gId = tr.getAttribute("data-group");
+
+                if (gId && validGroups.has(gId)) {
+                    tr.style.display = "";
+
+                    if (!seenGroups.has(gId)) {
+                        let snoTd = tr.querySelector(".col-sno-val");
+                        if (snoTd) {
+                            snoTd.innerText = snoCounter;
+                            snoCounter++;
+                        }
+                        seenGroups.add(gId);
+                    }
+                } else {
+                    tr.style.display = "none";
+                }
+            }
+        }
+
+        function exportToExcel() {
+            let wb = XLSX.utils.table_to_book(document.getElementById('masterTable'), { sheet: "Reconciliation", display: true });
+            XLSX.writeFile(wb, "Purchase_Reconciliation.xlsx");
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            let isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('gst_dark_mode', isDark);
+            document.getElementById('themeToggleBtn').innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+
+        function exportToPDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('l', 'pt', 'a4');
+                let reportTitle = "GSTR-2 (Purchase) Reconciliation Report";
+                doc.setFontSize(18); doc.setTextColor(44, 62, 80); doc.text(reportTitle, 40, 40);
+                doc.setFontSize(10); doc.setTextColor(0, 0, 0);
+
+                let tTotal = document.getElementById('cntTotal').innerText;
+                let tMatch = document.getElementById('cntMatched').innerText;
+                let tMis = document.getElementById('cntMismatch').innerText;
+                let tPart = document.getElementById('cntPartial').innerText;
+                let tMissB = document.getElementById('cntMissBook').innerText;
+                let tMissP = document.getElementById('cntMissPortal').innerText;
+
+                doc.setFont("helvetica", "bold"); doc.text("Executive Summary:", 40, 65); doc.setFont("helvetica", "normal");
+                doc.text(`Total Invoices: ${tTotal}`, 40, 80); doc.text(`Matched (OK): ${tMatch}`, 140, 80);
+                doc.setTextColor(211, 47, 47); doc.text(`Mismatch: ${tMis}`, 260, 80); doc.text(`Partial Match: ${tPart}`, 350, 80); doc.text(`Not in Books: ${tMissB}`, 460, 80); doc.text(`Not in Portal: ${tMissP}`, 570, 80);
+
+                doc.autoTable({ html: '#masterTable', startY: 95, theme: 'grid', styles: { fontSize: 7, cellPadding: 3, overflow: 'linebreak' }, headStyles: { fillColor: [0, 86, 179], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [245, 247, 250] }, useCss: true });
+                doc.save("Purchase_Mismatch_Report.pdf");
+            } catch (e) { alert("⚠️ PDF जनरेट करने में कोई दिक्कत आई है। पेज को रीफ्रेश करके दोबारा कोशिश करें।"); }
+        }
+
+        let currentLedgerData = [];
+        let ledgerSortAsc = true;
+        let activeGstin = "";
+
+        function openLedger(gstin) {
+            activeGstin = gstin;
+            currentLedgerData = masterData.filter(item => {
+                let bGstin = item.book ? item.book.gstin : '';
+                let pGstin = item.portal ? item.portal.gstin : '';
+                return normalize(bGstin) === normalize(gstin) || normalize(pGstin) === normalize(gstin);
+            });
+
+            if (currentLedgerData.length === 0) return;
+
+            let partyName = customNamesDB[gstin] || currentLedgerData[0].name || "Unknown Party";
+            document.getElementById('lblLedgerParty').innerText = partyName;
+            document.getElementById('lblLedgerGstin').innerText = gstin;
+
+            let cTot = currentLedgerData.length;
+            let cMat = 0, cMis = 0, cPart = 0, cMissB = 0, cMissP = 0;
+
+            currentLedgerData.forEach(r => {
+                if (r.status === 'status-matched') cMat++;
+                else if (r.status === 'status-mismatch') cMis++;
+                else if (r.status === 'status-partial-mismatch') cPart++;
+                else if (r.status === 'status-missing-book') cMissB++;
+                else if (r.status === 'status-missing-portal') cMissP++;
+            });
+
+            document.getElementById('ledgerStatsArea').innerHTML = `
+                <div class="l-stat"><h4 style="color:#333;">${cTot}</h4><p>Total Inv</p></div>
+                <div class="l-stat"><h4 style="color:#2e7d32;">${cMat}</h4><p>Matched</p></div>
+                <div class="l-stat"><h4 style="color:#d32f2f;">${cMis}</h4><p>Mismatch</p></div>
+                <div class="l-stat"><h4 style="color:#d84315;">${cPart}</h4><p>Partial</p></div>
+                <div class="l-stat"><h4 style="color:#9c27b0;">${cMissB}</h4><p>Not in Book</p></div>
+                <div class="l-stat"><h4 style="color:#00897b;">${cMissP}</h4><p>Not in Portal</p></div>
+            `;
+
+            document.getElementById('ledgerFilter').value = 'ALL';
+            document.getElementById('ledgerSearch').value = '';
+
+            renderLedgerTable();
+            document.getElementById('ledgerModal').style.display = 'flex';
+        }
+
+        function closeLedger() {
+            document.getElementById('ledgerModal').style.display = 'none';
+        }
+
+        function renderLedgerTable() {
+            let filter = document.getElementById('ledgerFilter').value;
+            let search = document.getElementById('ledgerSearch').value.toUpperCase();
+
+            let html = '';
+            let sno = 1;
+            let tBAmt = 0, tPAmt = 0, tDiff = 0;
+
+            currentLedgerData.forEach(item => {
+                let b = item.book; let p = item.portal; let rStatus = item.status;
+                let invNo = b ? b.inv : p.inv; let date = b ? b.date : p.date; let type = b ? b.type : p.type;
+
+                if (filter !== 'ALL' && rStatus !== filter) return;
+                if (search && invNo.toUpperCase().indexOf(search) === -1) return;
+
+                let bAmt = b ? b.amt : 0; let pAmt = p ? p.amt : 0; let diffAmt = bAmt - pAmt;
+                let bTax = b ? (b.igst + b.cgst + b.sgst) : 0;
+                let pTax = p ? (p.igst + p.cgst + p.sgst) : 0;
+
+                tBAmt += bAmt; tPAmt += pAmt; tDiff += diffAmt;
+
+                let sColor = "#333", sText = "";
+                if (rStatus === 'status-matched') { sColor = "#2e7d32"; sText = "Matched"; }
+                else if (rStatus === 'status-mismatch') { sColor = "#d32f2f"; sText = "Mismatch"; }
+                else if (rStatus === 'status-partial-mismatch') { sColor = "#d84315"; sText = "Partial"; }
+                else if (rStatus === 'status-missing-book') { sColor = "#9c27b0"; sText = "Not in Books"; }
+                else if (rStatus === 'status-missing-portal') { sColor = "#00897b"; sText = "Not in Portal"; }
+
+                let diffColor = Math.abs(diffAmt) < 0.1 ? '#2e7d32' : '#d32f2f';
+                let currentRemark = remarksDB[item.key] || '➕ Add Note';
+
+                html += `<tr style="color:${sColor}; font-weight:600;">
+                    <td class="text-center">${sno++}</td>
+                    <td>${date}</td>
+                    <td>${invNo}</td>
+                    <td><span style="background:#e9ecef; color:#555; font-size:10px; padding:2px 5px; border-radius:3px;">${type}</span></td>
+                    <td class="text-right">${formatMoney(bAmt)}</td>
+                    <td class="text-right">${formatMoney(pAmt)}</td>
+                    <td class="text-right" style="color:#555;">${formatMoney(bTax)}</td>
+                    <td class="text-right" style="color:#555;">${formatMoney(pTax)}</td>
+                    <td class="text-right" style="color:${diffColor};">${formatMoney(diffAmt)}</td>
+                    <td>${sText}</td>
+                    <td><span class="remark-cell" onclick="addRemark('${item.key}')" title="${currentRemark !== '➕ Add Note' ? currentRemark : ''}">${currentRemark}</span></td>
+                </tr>`;
+            });
+
+            document.getElementById('ledgerTableBody').innerHTML = html;
+
+            document.getElementById('ledgerTableFoot').innerHTML = `
+                <tr class="total-row">
+                    <td colspan="4" class="text-right">Ledger Total:</td>
+                    <td class="text-right">${formatMoney(tBAmt)}</td>
+                    <td class="text-right">${formatMoney(tPAmt)}</td>
+                    <td colspan="2"></td>
+                    <td class="text-right" style="color:${Math.abs(tDiff) < 0.1 ? '#2e7d32' : '#d32f2f'};">${formatMoney(tDiff)}</td>
+                    <td colspan="2"></td>
+                </tr>
+            `;
+        }
+
+        function sortLedger(field) {
+            currentLedgerData.sort((a, b) => {
+                let vA = 0, vB = 0;
+                let recA_B = a.book ? a.book : { amt: 0, date: '00000000' }; let recA_P = a.portal ? a.portal : { amt: 0, date: '00000000' };
+                let recB_B = b.book ? b.book : { amt: 0, date: '00000000' }; let recB_P = b.portal ? b.portal : { amt: 0, date: '00000000' };
+
+                if (field === 'b_amt') { vA = recA_B.amt; vB = recB_B.amt; }
+                else if (field === 'p_amt') { vA = recA_P.amt; vB = recB_P.amt; }
+                else if (field === 'diff') { vA = recA_B.amt - recA_P.amt; vB = recB_B.amt - recB_P.amt; }
+                else if (field === 'date') {
+                    vA = (a.book ? a.book.date : a.portal.date).split('-').reverse().join('');
+                    vB = (b.book ? b.book.date : b.portal.date).split('-').reverse().join('');
+                }
+
+                if (vA < vB) return ledgerSortAsc ? -1 : 1;
+                if (vA > vB) return ledgerSortAsc ? 1 : -1;
+                return 0;
+            });
+            ledgerSortAsc = !ledgerSortAsc;
+            renderLedgerTable();
+        }
+
+        function exportLedgerExcel() {
+            let wb = XLSX.utils.table_to_book(document.getElementById('ledgerTableMain'), { sheet: "Ledger", display: true });
+            XLSX.writeFile(wb, `Ledger_${activeGstin}.xlsx`);
+        }
+
+        function exportLedgerPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'pt', 'a4');
+            doc.setFontSize(14);
+            doc.text(`Party Ledger: ${document.getElementById('lblLedgerParty').innerText} (${activeGstin})`, 40, 40);
+
+            doc.autoTable({ html: '#ledgerTableMain', startY: 50, theme: 'grid', styles: { fontSize: 8, cellPadding: 3 }, headStyles: { fillColor: [60, 60, 60] } });
+            doc.save(`Ledger_${activeGstin}.pdf`);
+        }
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === "Escape" || event.keyCode === 27) {
+                let modal = document.getElementById('ledgerModal');
+                if (modal.style.display === 'flex') closeLedger();
+            }
+        });
+    </script>
+</body>
+
+</html>
