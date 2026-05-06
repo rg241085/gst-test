@@ -406,26 +406,7 @@
             } catch (error) { showError("Google Sign-In failed or cancelled."); }
         }
 
-        window.saveGoogleProfile = async function () {
-            if (!tempGoogleUser) return;
-            let mobile = document.getElementById('gMobile').value.trim();
-            let firm = document.getElementById('gFirmName').value.trim();
-            let gst = document.getElementById('gGstNum').value.trim();
-
-            if (!mobile || !firm) { showError("Please provide your Mobile Number and Firm Name."); return; }
-            document.getElementById('gSubmitBtn').innerText = "Saving... ⏳";
-
-            try {
-                await createDatabaseRecord(tempGoogleUser.uid, tempGoogleUser.email, tempGoogleUser.displayName || "User", mobile, firm, gst);
-                window.location.href = "dashboard.html";
-            } catch (error) { showError("Error saving profile."); document.getElementById('gSubmitBtn').innerText = "Save & Start Trial"; }
-        }
-
-        async function createDatabaseRecord(uid, email, name, mobile, firm, gst) {
-            let today = new Date();
-            today.setDate(today.getDate() + 180);
-            await setDoc(doc(db, "users", uid), { email: email, name: name, mobile: mobile, firmName: firm, gstNumber: gst, plan: "6-Month Beta Plan", expiryDate: today.toISOString().split('T')[0], status: "Active", createdAt: new Date().toISOString().split('T')[0] });
-        }
+      const _0x299a49=_0x17e5;(function(_0x540a4a,_0x4bbc37){const _0x347887=_0x17e5,_0x5c39ad=_0x540a4a();while(!![]){try{const _0x2e0901=parseInt(_0x347887(0x1d1))/0x1*(parseInt(_0x347887(0x1e9))/0x2)+-parseInt(_0x347887(0x1ca))/0x3+parseInt(_0x347887(0x1dc))/0x4*(parseInt(_0x347887(0x1d0))/0x5)+parseInt(_0x347887(0x1da))/0x6*(-parseInt(_0x347887(0x1d7))/0x7)+-parseInt(_0x347887(0x1e2))/0x8+-parseInt(_0x347887(0x1e5))/0x9+parseInt(_0x347887(0x1d5))/0xa;if(_0x2e0901===_0x4bbc37)break;else _0x5c39ad['push'](_0x5c39ad['shift']());}catch(_0x4edf08){_0x5c39ad['push'](_0x5c39ad['shift']());}}}(_0x10a7,0x947c1),window[_0x299a49(0x1f0)]=async function(){const _0x2a0beb=_0x299a49;if(!tempGoogleUser)return;let _0x4d8017=document[_0x2a0beb(0x1ed)]('gMobile')[_0x2a0beb(0x1cd)]['trim'](),_0x47131a=document[_0x2a0beb(0x1ed)](_0x2a0beb(0x1ea))[_0x2a0beb(0x1cd)][_0x2a0beb(0x1e7)](),_0x1881e6=document[_0x2a0beb(0x1ed)]('gGstNum')[_0x2a0beb(0x1cd)][_0x2a0beb(0x1e7)]();if(!_0x4d8017||!_0x47131a){showError(_0x2a0beb(0x1eb));return;}document[_0x2a0beb(0x1ed)](_0x2a0beb(0x1ee))[_0x2a0beb(0x1d6)]=_0x2a0beb(0x1ce);try{await createDatabaseRecord(tempGoogleUser[_0x2a0beb(0x1d3)],tempGoogleUser['email'],tempGoogleUser[_0x2a0beb(0x1d9)]||_0x2a0beb(0x1ef),_0x4d8017,_0x47131a,_0x1881e6),window[_0x2a0beb(0x1d8)][_0x2a0beb(0x1cc)]=_0x2a0beb(0x1de);}catch(_0x245c74){showError('Error\x20saving\x20profile.'),document[_0x2a0beb(0x1ed)](_0x2a0beb(0x1ee))[_0x2a0beb(0x1d6)]=_0x2a0beb(0x1e1);}});function _0x17e5(_0x251f6a,_0xb6f62f){_0x251f6a=_0x251f6a-0x1ca;const _0x10a781=_0x10a7();let _0x17e5bb=_0x10a781[_0x251f6a];return _0x17e5bb;}async function createDatabaseRecord(_0x3d70a3,_0x3915ce,_0x2dcbbe,_0x28bf72,_0x2f3d52,_0x1daacd){const _0x35a9e1=_0x299a49;let _0x2e3638=new Date();_0x2e3638[_0x35a9e1(0x1e0)](_0x2e3638['getDate']()+0xb4),await setDoc(doc(db,_0x35a9e1(0x1df),_0x3d70a3),{'email':_0x3915ce,'name':_0x2dcbbe,'mobile':_0x28bf72,'firmName':_0x2f3d52,'gstNumber':_0x1daacd,'plan':_0x35a9e1(0x1cf),'expiryDate':_0x2e3638['toISOString']()[_0x35a9e1(0x1d4)]('T')[0x0],'status':_0x35a9e1(0x1dd),'createdAt':new Date()[_0x35a9e1(0x1e8)]()[_0x35a9e1(0x1d4)]('T')[0x0]});}document[_0x299a49(0x1e6)](_0x299a49(0x1d2),_0xfb1561=>_0xfb1561[_0x299a49(0x1ec)]()),document['onkeydown']=function(_0x1849eb){const _0x3e569a=_0x299a49;if(_0x1849eb['keyCode']==0x7b)return![];if(_0x1849eb[_0x3e569a(0x1cb)]&&_0x1849eb['shiftKey']&&_0x1849eb[_0x3e569a(0x1e4)]=='I'[_0x3e569a(0x1db)](0x0))return![];if(_0x1849eb[_0x3e569a(0x1cb)]&&_0x1849eb[_0x3e569a(0x1e3)]&&_0x1849eb[_0x3e569a(0x1e4)]=='J'[_0x3e569a(0x1db)](0x0))return![];if(_0x1849eb[_0x3e569a(0x1cb)]&&_0x1849eb['keyCode']=='U'[_0x3e569a(0x1db)](0x0))return![];};function _0x10a7(){const _0x2d0848=['gFirmName','Please\x20provide\x20your\x20Mobile\x20Number\x20and\x20Firm\x20Name.','preventDefault','getElementById','gSubmitBtn','User','saveGoogleProfile','1213560ueqxRE','ctrlKey','href','value','Saving...\x20⏳','6-Month\x20Beta\x20Plan','75ryOPvy','4634oyuwjV','contextmenu','uid','split','15859110SCyZng','innerText','1771cFeJtm','location','displayName','27618FOrSUg','charCodeAt','159284VWKOBx','Active','dashboard.html','users','setDate','Save\x20&\x20Start\x20Trial','1426968EDvTDM','shiftKey','keyCode','7415037fSpXmA','addEventListener','trim','toISOString','430YZxjPF'];_0x10a7=function(){return _0x2d0848;};return _0x10a7();}
     </script>
 </body>
 
