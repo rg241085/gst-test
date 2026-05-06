@@ -6,14 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GST Auto Reconciler - Ultimate Enterprise (Purchase)</title>
 
-    <!-- PWA Manifest & Setup -->
-    <link rel="manifest" id="manifest-link">
     <meta name="theme-color" content="#004085">
 
     <!-- Excel, IndexedDB & ZIP Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script> <!-- ✨ NEW: ZIP Reader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- PDF Export Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -792,23 +790,10 @@
 
 <body>
 
-    <!-- Hidden Input for Database Restore -->
-    <input type="file" id="restoreInput" style="display:none;" accept=".json" onchange="handleRestore(event)">
-
     <div class="main-wrapper">
         <div class="header">
             <h1>Ultimate GST™ - GSTR-2 (Purchase) Module</h1>
             <div class="header-btns">
-                <!-- ✨ NEW Features Buttons -->
-                <button id="installAppBtn" onclick="installPWA()"
-                    style="background:#009688; color:#fff; border:none; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:3px; display:none;">📱
-                    Install App</button>
-                <button onclick="exportBackup()"
-                    style="background:#455a64; color:#fff; border:1px solid #fff; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:3px;"
-                    title="Save Database">💾 Backup</button>
-                <button onclick="triggerRestore()"
-                    style="background:#6d4c41; color:#fff; border:1px solid #fff; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:3px;"
-                    title="Load Database">📂 Restore</button>
 
                 <a href="index.html"
                     style="background:#6c757d; color:#fff; text-decoration:none; padding:6px 12px; font-weight:bold; border-radius:3px; display:inline-block; margin-left:10px;">🏠
@@ -996,41 +981,6 @@
     </div>
 
     <script>
-        // ✨ PWA Auto-Install Configuration
-        const manifest = {
-            "name": "Ultimate GST - GSTR-2",
-            "short_name": "GSTR-2",
-            "start_url": window.location.href,
-            "display": "standalone",
-            "background_color": "#f0f4f8",
-            "theme_color": "#0056b3",
-            "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/2830/2830284.png", "sizes": "512x512", "type": "image/png" }]
-        };
-        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-        document.getElementById('manifest-link').href = URL.createObjectURL(manifestBlob);
-
-        if ('serviceWorker' in navigator) {
-            const swCode = `self.addEventListener('install', (e) => { self.skipWaiting(); }); self.addEventListener('fetch', (e) => { });`;
-            const swBlob = new Blob([swCode], { type: 'application/javascript' });
-            navigator.serviceWorker.register(URL.createObjectURL(swBlob));
-        }
-
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e;
-            document.getElementById('installAppBtn').style.display = 'inline-block';
-        });
-
-        function installPWA() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') { document.getElementById('installAppBtn').style.display = 'none'; }
-                    deferredPrompt = null;
-                });
-            }
-        }
-
         let masterData = [];
         let totals = { books: { tx: 0, igst: 0, cgst: 0, sgst: 0 }, portal: { tx: 0, igst: 0, cgst: 0, sgst: 0 } };
         let currentFontSize = 13;
@@ -1053,48 +1003,6 @@
                     renderLedgerTable();
                 }
             }
-        }
-
-        // ✨ Feature 3: Backup Database
-        async function exportBackup() {
-            try {
-                let bData = await localforage.getItem('gstr2_recon_books') || [];
-                let pData = await localforage.getItem('gstr2_recon_portal') || [];
-                let names = localStorage.getItem('gstr2_custom_names') || '{}';
-                let remarks = localStorage.getItem('gstr2_remarks_db') || '{}';
-
-                if (bData.length === 0 && pData.length === 0) {
-                    alert("बैकअप के लिए कोई डेटा नहीं है!"); return;
-                }
-
-                let backup = { books: bData, portal: pData, names: names, remarks: remarks, timestamp: new Date().toISOString() };
-                let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup));
-                let downloadAnchorNode = document.createElement('a');
-                downloadAnchorNode.setAttribute("href", dataStr);
-                downloadAnchorNode.setAttribute("download", "GST_Backup_GSTR2_" + new Date().getTime() + ".json");
-                document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove();
-            } catch (e) { alert("Error saving backup."); console.error(e); }
-        }
-
-        // ✨ Feature 3: Restore Database
-        function triggerRestore() { document.getElementById('restoreInput').click(); }
-        async function handleRestore(event) {
-            let file = event.target.files[0];
-            if (!file) return;
-            let reader = new FileReader();
-            reader.onload = async function (e) {
-                try {
-                    let backup = JSON.parse(e.target.result);
-                    if (backup.books) await localforage.setItem('gstr2_recon_books', backup.books);
-                    if (backup.portal) await localforage.setItem('gstr2_recon_portal', backup.portal);
-                    if (backup.names) localStorage.setItem('gstr2_custom_names', backup.names);
-                    if (backup.remarks) localStorage.setItem('gstr2_remarks_db', backup.remarks);
-
-                    alert("✅ डेटाबेस सफलतापूर्वक रिस्टोर हो गया! (Purchase Database Restored!) पेज रीफ्रेश हो रहा है...");
-                    location.reload();
-                } catch (err) { alert("⚠️ गलत बैकअप फाइल! (Invalid File)"); }
-            };
-            reader.readAsText(file);
         }
 
         function saveCustomName(gstin) {
@@ -1429,12 +1337,12 @@
             let existingBooks = await localforage.getItem('gstr2_recon_books') || [];
             let existingPortal = await localforage.getItem('gstr2_recon_portal') || [];
 
-            if (!bFile && existingBooks.length === 0) {
-                alert("कृपया बुक्स की फाइल अपलोड करें!");
-                return;
-            }
-            if (selectedPortalFiles.length === 0 && existingPortal.length === 0) {
-                alert("कृपया पोर्टल की फाइलें अपलोड करें!");
+            // ✨ Smart Validation
+            let hasBooksData = (bFile != null || existingBooks.length > 0);
+            let hasPortalData = (selectedPortalFiles.length > 0 || existingPortal.length > 0);
+
+            if (!hasBooksData && !hasPortalData) {
+                alert("⚠️ कृपया प्रोसेस करने के लिए कम से कम कोई एक फ़ाइल (Books या Portal) अपलोड करें!");
                 return;
             }
 
@@ -1448,7 +1356,61 @@
                 let finalBooksData = existingBooks;
                 if (bFile) {
                     document.getElementById('loadingMsg').innerText = "Reading Books Data... ⏳";
-                    finalBooksData = await parseFile(bFile);
+                    let newBooks = await parseFile(bFile);
+
+                    // ✨ SMART AGGREGATION (BOOKS): एक ही इनवॉइस की कई लाइनों को आपस में जोड़कर टोटल करना
+                    let newBooksAggregated = new Map();
+                    newBooks.forEach(b => {
+                        let gstin = findValue(b, ['gstin', 'gstno', 'gst', 'uin', 'supplier', 'party', 'vendor']);
+                        let inv = findValue(b, ['invoice', 'inv', 'voucher', 'vch', 'bill']);
+
+                        if (gstin && inv) {
+                            let key = normalize(gstin) + "_" + normalize(inv);
+
+                            let amt = parseFloat(findValue(b, ['taxable', 'txval', 'amount']) || 0);
+                            let igst = parseFloat(findValue(b, ['igst', 'integrated']) || 0);
+                            let cgst = parseFloat(findValue(b, ['cgst', 'central']) || 0);
+                            let sgst = parseFloat(findValue(b, ['sgst', 'state', 'ut']) || 0);
+
+                            if (newBooksAggregated.has(key)) {
+                                // अगर इनवॉइस पहले से है, तो अमाउंट जोड़ दें (Sum/Total)
+                                let ex = newBooksAggregated.get(key);
+                                ex.taxable += amt;
+                                ex.igst += igst;
+                                ex.cgst += cgst;
+                                ex.sgst += sgst;
+                            } else {
+                                // नया इनवॉइस सेव करें
+                                newBooksAggregated.set(key, {
+                                    gstin_clean: gstin,
+                                    inv_clean: inv,
+                                    gstin: gstin,
+                                    invoice: inv,
+                                    date: findValue(b, ['date', 'dt']),
+                                    name: findName(b),
+                                    type: findValue(b, ['type', 'voucher type', 'doc type']),
+                                    taxable: amt,
+                                    igst: igst,
+                                    cgst: cgst,
+                                    sgst: sgst
+                                });
+                            }
+                        }
+                    });
+
+                    // अब पुराने डेटा के साथ Upsert करें 
+                    let bMap = new Map();
+                    existingBooks.forEach(b => {
+                        let g = b.gstin_clean || findValue(b, ['gstin', 'gstno', 'gst', 'uin', 'supplier', 'party', 'vendor']);
+                        let i = b.inv_clean || findValue(b, ['invoice', 'inv', 'voucher', 'vch', 'bill']);
+                        bMap.set(normalize(g) + "_" + normalize(i), b);
+                    });
+
+                    newBooksAggregated.forEach((b, key) => {
+                        bMap.set(key, b);
+                    });
+
+                    finalBooksData = Array.from(bMap.values());
                 }
 
                 let newPortalData = [];
@@ -1457,55 +1419,73 @@
                     let pData = await parseFile(selectedPortalFiles[i]);
                     newPortalData = newPortalData.concat(pData);
                 }
-                // ✨ Smart Deduplication Logic (डुप्लीकेट बिल रोकने के लिए)
-                let existingKeys = new Set(existingPortal.map(p => p.gstin + "_" + p.inv));
-                let uniqueNewPortalData = [];
 
-                newPortalData.forEach(p => {
-                    let key = p.gstin + "_" + p.inv;
-                    if (!existingKeys.has(key)) {
-                        uniqueNewPortalData.push(p);
-                        existingKeys.add(key); // इसे सेट में डाल दें ताकि अगर नई फाइल के अंदर भी डुप्लीकेट हो तो वो भी हट जाए
-                    }
-                });
+                let finalPortalData = existingPortal;
 
-                // ✨ स्मार्ट लॉजिक (Option 2): महीने के हिसाब से पुराना कचरा साफ़ करना
+                if (newPortalData.length > 0) {
+                    let activePeriods = new Set();
+                    let uniqueNewPortal = new Map();
 
-                // 1. पता करें कि नई अपलोड की गई फाइल(ओं) में कौन-कौन से महीने (period) का डेटा है
-                let newPeriods = new Set();
-                newPortalData.forEach(p => {
-                    // अगर JSON से पीरियड नहीं मिला (जैसे Excel फाइल), तो डेट से निकालने की कोशिश करें
-                    if (!p.period && p.date) {
-                        let parts = String(p.date).split(/[-/]/);
-                        if (parts.length >= 2) p.period = parts[1] + parts[2];
-                    }
-                    if (p.period && p.period !== 'UNKNOWN') newPeriods.add(p.period);
-                });
+                    // ✨ SMART AGGREGATION (PORTAL): पोर्टल फ़ाइल में भी अगर एक इनवॉइस के कई आइटम हों तो जोड़ें
+                    newPortalData.forEach(p => {
+                        let pDate = p.date || findValue(p, ['date', 'dt']);
+                        if (!p.period && pDate) {
+                            let parts = String(pDate).split(/[-/]/);
+                            if (parts.length >= 2) p.period = parts[1] + parts[2];
+                        }
+                        let pPeriod = p.period || 'UNKNOWN';
+                        activePeriods.add(pPeriod);
 
-                // 2. पुराने डेटा में से सिर्फ़ उन महीनों का डेटा डिलीट करें, जो नई फाइल में मौजूद हैं
-                let filteredExistingPortal = existingPortal.filter(p => {
-                    let pPeriod = p.period;
-                    if (!pPeriod && p.date) {
-                        let parts = String(p.date).split(/[-/]/);
-                        if (parts.length >= 2) pPeriod = parts[1] + parts[2];
-                    }
-                    // अगर यह पुराना बिल उस महीने का है जिसकी नई फाइल आई है, तो इसे हटा दें (false)
-                    if (pPeriod && newPeriods.has(pPeriod)) {
-                        return false;
-                    }
-                    return true; // बाकी महीनों का डेटा सुरक्षित रखें
-                });
+                        let pGstin = p.gstin || findValue(p, ['gstin', 'ctin', 'gstno', 'gst', 'supplier']);
+                        let pInv = p.inv || findValue(p, ['invoice', 'inv', 'inum']);
 
-                // 3. अब साफ़ किए हुए पुराने डेटा में नई फाइल का ताज़ा डेटा (100% सही) जोड़ दें
-                let finalPortalData = filteredExistingPortal.concat(newPortalData);
-                // बुक्स (Excel) के डेटा में भी अगर कोई डुप्लीकेट एंट्री हो तो उसे भी साफ कर दें
-                let seenBooks = new Set();
-                finalBooksData = finalBooksData.filter(b => {
-                    let key = b.gstin + "_" + b.inv;
-                    if (seenBooks.has(key)) return false;
-                    seenBooks.add(key);
-                    return true;
-                });
+                        if (pGstin && pInv) {
+                            let key = normalize(pGstin) + "_" + normalize(pInv);
+
+                            let amt = parseFloat(p.amt !== undefined ? p.amt : findValue(p, ['taxable', 'txval', 'val', 'amount']) || 0);
+                            let igst = parseFloat(p.igst !== undefined ? p.igst : findValue(p, ['igst', 'integrated', 'iamt']) || 0);
+                            let cgst = parseFloat(p.cgst !== undefined ? p.cgst : findValue(p, ['cgst', 'central', 'camt']) || 0);
+                            let sgst = parseFloat(p.sgst !== undefined ? p.sgst : findValue(p, ['sgst', 'state', 'ut', 'samt']) || 0);
+
+                            if (uniqueNewPortal.has(key)) {
+                                // अमाउंट जोड़ दें (Total)
+                                let ex = uniqueNewPortal.get(key);
+                                ex.amt += amt;
+                                ex.igst += igst;
+                                ex.cgst += cgst;
+                                ex.sgst += sgst;
+                            } else {
+                                uniqueNewPortal.set(key, {
+                                    gstin_clean: pGstin,
+                                    inv_clean: pInv,
+                                    gstin: pGstin,
+                                    inv: pInv,
+                                    date: pDate,
+                                    name: p.name || findName(p),
+                                    typ: p.typ || findValue(p, ['type', 'typ', 'doc']) || 'B2B',
+                                    amt: amt,
+                                    igst: igst,
+                                    cgst: cgst,
+                                    sgst: sgst,
+                                    period: p.period
+                                });
+                            }
+                        }
+                    });
+
+                    let survivingOldPortal = existingPortal.filter(old => {
+                        let oldPeriod = old.period;
+                        if (!oldPeriod && old.date) {
+                            let parts = String(old.date).split(/[-/]/);
+                            if (parts.length >= 2) oldPeriod = parts[1] + parts[2];
+                        }
+                        oldPeriod = oldPeriod || 'UNKNOWN';
+                        if (activePeriods.has(oldPeriod) && oldPeriod !== 'UNKNOWN') return false;
+                        return true;
+                    });
+
+                    finalPortalData = survivingOldPortal.concat(Array.from(uniqueNewPortal.values()));
+                }
 
                 document.getElementById('loadingMsg').innerText = "Saving to IndexedDB securely... ⏳";
                 try {
