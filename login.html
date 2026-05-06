@@ -1,114 +1,320 @@
 <!DOCTYPE html>
 <html lang="hi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate GST - Login / Sign Up</title>
+    <title>Ultimate GST - Login</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
-        .login-card { background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        .login-card h2 { margin: 0 0 10px 0; color: #1a237e; font-size: 24px; }
-        .login-card p { color: #666; font-size: 14px; margin-bottom: 25px; }
-        
-        .input-group { margin-bottom: 15px; text-align: left; }
-        .input-group label { display: block; font-size: 12px; font-weight: bold; color: #333; margin-bottom: 5px; }
-        .input-group input { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 5px; font-size: 14px; box-sizing: border-box; outline: none; }
-        .input-group input:focus { border-color: #1a237e; }
-        
-        /* Extra fields hidden by default (for login mode) */
-        .signup-fields { display: none; }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #ffffff;
+            color: #333;
+        }
 
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        .btn-primary { background: #1a237e; color: #fff; }
-        .btn-primary:hover { background: #121858; }
-        
-        .btn-google { background: #fff; color: #333; border: 1px solid #ced4da; }
-        .btn-google:hover { background: #f8f9fa; }
-        .btn-google img { width: 18px; }
+        /* Left Panel - Info & Illustration */
+        .left-panel {
+            flex: 1;
+            background-color: #f4f7fe;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-right: 1px solid #e0e6ed;
+        }
 
-        .divider { display: flex; align-items: center; margin: 20px 0; color: #999; font-size: 12px; text-transform: uppercase; }
-        .divider::before, .divider::after { content: ""; flex: 1; border-bottom: 1px solid #e0e0e0; }
-        .divider::before { margin-right: 10px; } .divider::after { margin-left: 10px; }
+        .info-content {
+            max-width: 400px;
+        }
 
-        .toggle-text { font-size: 13px; color: #666; margin-top: 15px; }
-        .toggle-text span { color: #1a237e; font-weight: bold; cursor: pointer; text-decoration: underline; }
+        .info-content h1 {
+            font-size: 32px;
+            color: #1a202c;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
 
-        #errorMsg { color: #d32f2f; font-size: 12px; font-weight: bold; margin-bottom: 15px; display: none; background: #ffebee; padding: 8px; border-radius: 4px; border: 1px solid #ffcdd2; }
+        .info-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .info-content li {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            color: #4a5568;
+            margin-bottom: 15px;
+        }
+
+        .info-content li svg {
+            width: 24px;
+            height: 24px;
+            fill: #00a152;
+            margin-right: 10px;
+        }
+
+        .brand-logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0d6efd;
+            letter-spacing: -1px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        /* Right Panel - Form */
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background: #ffffff;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .login-card p.subtitle {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 0 0 5px 0;
+        }
+
+        .login-card h2 {
+            margin: 0 0 25px 0;
+            color: #111827;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 15px;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+
+        .signup-fields {
+            display: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: #0d6efd;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #0b5ed7;
+        }
+
+        .btn-google {
+            background: #ffffff;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-google:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .btn-google img {
+            width: 18px;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: #6b7280;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .divider::before {
+            margin-right: 15px;
+        }
+
+        .divider::after {
+            margin-left: 15px;
+        }
+
+        .toggle-text {
+            font-size: 14px;
+            color: #4a5568;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .toggle-text span {
+            color: #0d6efd;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .toggle-text span:hover {
+            text-decoration: underline;
+        }
+
+        #errorMsg {
+            color: #b91c1c;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: none;
+            background: #fee2e2;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #f87171;
+            text-align: center;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .left-panel {
+                display: none;
+            }
+
+            .right-panel {
+                padding: 20px;
+            }
+        }
     </style>
 </head>
+
 <body>
 
-    <div class="login-card">
-        <div id="errorMsg"></div>
+    <!-- Left Side: Information -->
+    <div class="left-panel">
+        <div class="brand-logo">Ultimate GST™</div>
+        <div class="info-content">
+            <h1>Maximum ITC savings on your fingertips.</h1>
+            <ul>
+                <li><svg viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg> 100% pre-fill - No manual data entries</li>
+                <li><svg viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg> Thousands of invoices matched in seconds</li>
+                <li><svg viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg> Secure, private, and lightning fast</li>
+            </ul>
+        </div>
+    </div>
 
-        <!-- 🟢 MAIN AUTH FORM (Email/Password + Google) -->
-        <div id="mainAuthForm">
-            <h2 id="formTitle">Welcome Back</h2>
-            <p id="formSubtitle">Login to your Ultimate GST account</p>
+    <!-- Right Side: Login Form -->
+    <div class="right-panel">
+        <div class="login-card">
+            <div id="errorMsg"></div>
 
-            <button class="btn btn-google" onclick="handleGoogleAuth()">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
-                Continue with Google
-            </button>
+            <div id="mainAuthForm">
+                <p class="subtitle" id="formSubtitle">Welcome!</p>
+                <h2 id="formTitle">Log in to your account</h2>
 
-            <div class="divider">OR</div>
+                <button class="btn btn-google" onclick="handleGoogleAuth()">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
+                    Sign in with Google
+                </button>
 
-            <div class="signup-fields" id="signupFields">
+                <div class="divider">Or</div>
+
+                <div class="signup-fields" id="signupFields">
+                    <div class="input-group">
+                        <input type="text" id="fullName" placeholder="Full Name *">
+                    </div>
+                    <div class="input-group">
+                        <input type="tel" id="mobile" placeholder="Mobile Number *">
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="firmName" placeholder="Company / Firm Name *">
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="gstNum" placeholder="GST Number (Optional)">
+                    </div>
+                </div>
+
                 <div class="input-group">
-                    <label>Full Name <span style="color:red;">*</span></label>
-                    <input type="text" id="fullName" placeholder="Rahul Kumar">
+                    <input type="email" id="email" placeholder="Enter email address *">
                 </div>
                 <div class="input-group">
-                    <label>Mobile / WhatsApp Number <span style="color:red;">*</span></label>
-                    <input type="tel" id="mobile" placeholder="9876543210">
+                    <input type="password" id="password" placeholder="Enter password *">
                 </div>
-                <div class="input-group">
-                    <label>Company / Firm Name <span style="color:red;">*</span></label>
-                    <input type="text" id="firmName" placeholder="M/s Sharma Traders">
-                </div>
-                <div class="input-group">
-                    <label>GST Number (Optional)</label>
-                    <input type="text" id="gstNum" placeholder="08ABCDE1234F1Z5">
+
+                <button class="btn btn-primary" id="mainBtn" onclick="handleAuth()">Agree and continue</button>
+
+                <div class="toggle-text" id="toggleDiv">
+                    Already registered? <span onclick="toggleForm()">Create a 6-Month Free Trial</span>
                 </div>
             </div>
 
-            <div class="input-group">
-                <label>Email Address <span style="color:red;">*</span></label>
-                <input type="email" id="email" placeholder="you@company.com">
-            </div>
-            <div class="input-group">
-                <label>Password <span style="color:red;">*</span></label>
-                <input type="password" id="password" placeholder="••••••••">
-            </div>
+            <!-- Complete Profile Form (For Google Users) -->
+            <div id="googleProfileForm" style="display:none;">
+                <h2>Complete Profile</h2>
+                <p class="subtitle" style="margin-bottom: 25px;">Please provide your business details to activate your
+                    trial.</p>
 
-            <button class="btn btn-primary" id="mainBtn" onclick="handleAuth()">Login</button>
+                <div class="input-group"><input type="tel" id="gMobile" placeholder="Mobile Number *"></div>
+                <div class="input-group"><input type="text" id="gFirmName" placeholder="Company / Firm Name *"></div>
+                <div class="input-group"><input type="text" id="gGstNum" placeholder="GST Number (Optional)"></div>
 
-            <div class="toggle-text" id="toggleDiv">
-                New user? <span onclick="toggleForm()">Create a 7-Day Free Trial</span>
+                <button class="btn btn-primary" id="gSubmitBtn" onclick="saveGoogleProfile()">Save & Start
+                    Trial</button>
             </div>
         </div>
-
-        <!-- 🔵 COMPLETE PROFILE FORM (For New Google Users Only) -->
-        <div id="googleProfileForm" style="display:none;">
-            <h2 style="color: #1a237e;">Complete Profile</h2>
-            <p style="color: #666; margin-bottom: 25px;">Please provide your business details to activate your 7-Day Free Trial.</p>
-            
-            <div class="input-group">
-                <label>Mobile / WhatsApp Number <span style="color:red;">*</span></label>
-                <input type="tel" id="gMobile" placeholder="9876543210">
-            </div>
-            <div class="input-group">
-                <label>Company / Firm Name <span style="color:red;">*</span></label>
-                <input type="text" id="gFirmName" placeholder="M/s Sharma Traders">
-            </div>
-            <div class="input-group">
-                <label>GST Number (Optional)</label>
-                <input type="text" id="gGstNum" placeholder="08ABCDE1234F1Z5">
-            </div>
-
-            <button class="btn btn-primary" id="gSubmitBtn" onclick="saveGoogleProfile()">Save & Start Trial</button>
-        </div>
-
     </div>
 
     <!-- Firebase SDKs -->
@@ -117,7 +323,6 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // 🔥 आपकी Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyB8fQTZ8mw4ABYJmPh1pQH_hilEhkSI9jE",
             authDomain: "ultimate-gst-saas.firebaseapp.com",
@@ -133,17 +338,17 @@
         const googleProvider = new GoogleAuthProvider();
 
         let isLoginMode = true;
-        let tempGoogleUser = null; // Google से आये नए यूज़र का डेटा थोड़े समय के लिए रोकने के लिए
+        let tempGoogleUser = null;
 
-        window.toggleForm = function() {
+        window.toggleForm = function () {
             isLoginMode = !isLoginMode;
             document.getElementById('signupFields').style.display = isLoginMode ? 'none' : 'block';
-            document.getElementById('formTitle').innerText = isLoginMode ? "Welcome Back" : "Create Account";
-            document.getElementById('formSubtitle').innerText = isLoginMode ? "Login to your Ultimate GST account" : "Fill details to start 7-Day Free Trial";
-            document.getElementById('mainBtn').innerText = isLoginMode ? "Login" : "Sign Up & Start Trial";
-            document.getElementById('toggleDiv').innerHTML = isLoginMode 
-                ? `New user? <span onclick="toggleForm()">Create a 7-Day Free Trial</span>` 
-                : `Already have an account? <span onclick="toggleForm()">Login here</span>`;
+            document.getElementById('formTitle').innerText = isLoginMode ? "Log in to your account" : "Create your account";
+            document.getElementById('formSubtitle').innerText = isLoginMode ? "Welcome!" : "Start your journey";
+            document.getElementById('mainBtn').innerText = isLoginMode ? "Agree and continue" : "Sign up and continue";
+            document.getElementById('toggleDiv').innerHTML = isLoginMode
+                ? `Not registered? <span onclick="toggleForm()">Create a 6-Month Free Trial</span>`
+                : `Already registered? <span onclick="toggleForm()">Login</span>`;
             document.getElementById('errorMsg').style.display = 'none';
         }
 
@@ -153,19 +358,17 @@
             errDiv.style.display = 'block';
         }
 
-        // 1. Email & Password Auth
-        window.handleAuth = async function() {
+        window.handleAuth = async function () {
             let email = document.getElementById('email').value.trim();
             let password = document.getElementById('password').value.trim();
 
             if (!email || !password) { showError("Please enter Email and Password."); return; }
-
             document.getElementById('mainBtn').innerText = "Processing... ⏳";
 
             try {
                 if (isLoginMode) {
                     await signInWithEmailAndPassword(auth, email, password);
-                    window.location.href = "index.html"; 
+                    window.location.href = "dashboard.html";
                 } else {
                     let fullName = document.getElementById('fullName').value.trim();
                     let mobile = document.getElementById('mobile').value.trim();
@@ -174,94 +377,56 @@
 
                     if (!fullName || !mobile || !firmName) {
                         showError("Please fill all the required (*) fields.");
-                        document.getElementById('mainBtn').innerText = "Sign Up & Start Trial";
+                        document.getElementById('mainBtn').innerText = "Sign up and continue";
                         return;
                     }
 
                     const userCred = await createUserWithEmailAndPassword(auth, email, password);
                     await createDatabaseRecord(userCred.user.uid, email, fullName, mobile, firmName, gstNum);
-                    
-                    alert("✅ Account created successfully! Your 7-Day Free Trial has started.");
-                    window.location.href = "index.html";
+                    window.location.href = "dashboard.html";
                 }
             } catch (error) {
                 showError(error.message.replace("Firebase:", ""));
-                document.getElementById('mainBtn').innerText = isLoginMode ? "Login" : "Sign Up & Start Trial";
+                document.getElementById('mainBtn').innerText = isLoginMode ? "Agree and continue" : "Sign up and continue";
             }
         }
 
-        // 2. Google Auth
-        window.handleGoogleAuth = async function() {
+        window.handleGoogleAuth = async function () {
             try {
                 const result = await signInWithPopup(auth, googleProvider);
                 const user = result.user;
-
-                // डेटाबेस में चेक करें कि क्या यूज़र पहले से है?
-                const docRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(docRef);
+                const docSnap = await getDoc(doc(db, "users", user.uid));
 
                 if (!docSnap.exists()) {
-                    // 🔴 नया यूज़र है: उसे डैशबोर्ड पर मत भेजो। 'Complete Profile' फॉर्म दिखाओ।
                     tempGoogleUser = user;
                     document.getElementById('mainAuthForm').style.display = 'none';
                     document.getElementById('googleProfileForm').style.display = 'block';
                     document.getElementById('errorMsg').style.display = 'none';
-                } else {
-                    // 🟢 पुराना यूज़र है: सीधा अंदर भेज दो!
-                    window.location.href = "index.html";
-                }
-            } catch (error) {
-                console.error(error);
-                showError("Google Sign-In failed or was cancelled.");
-            }
+                } else { window.location.href = "dashboard.html"; }
+            } catch (error) { showError("Google Sign-In failed or cancelled."); }
         }
 
-        // 3. Google Profile Save Function (For New Users)
-        window.saveGoogleProfile = async function() {
+        window.saveGoogleProfile = async function () {
             if (!tempGoogleUser) return;
-
             let mobile = document.getElementById('gMobile').value.trim();
             let firm = document.getElementById('gFirmName').value.trim();
             let gst = document.getElementById('gGstNum').value.trim();
 
-            if (!mobile || !firm) {
-                showError("Please provide your Mobile Number and Firm Name.");
-                return;
-            }
-
+            if (!mobile || !firm) { showError("Please provide your Mobile Number and Firm Name."); return; }
             document.getElementById('gSubmitBtn').innerText = "Saving... ⏳";
 
             try {
-                // डेटाबेस में नाम (Google से मिला हुआ) और बाकी डिटेल्स सेव करें
                 await createDatabaseRecord(tempGoogleUser.uid, tempGoogleUser.email, tempGoogleUser.displayName || "User", mobile, firm, gst);
-                
-                alert("✅ Profile completed! Your 7-Day Free Trial has started.");
-                window.location.href = "index.html";
-            } catch (error) {
-                console.error(error);
-                showError("Error saving profile. Please try again.");
-                document.getElementById('gSubmitBtn').innerText = "Save & Start Trial";
-            }
+                window.location.href = "dashboard.html";
+            } catch (error) { showError("Error saving profile."); document.getElementById('gSubmitBtn').innerText = "Save & Start Trial"; }
         }
 
-        // 4. Common Database Saving Logic
         async function createDatabaseRecord(uid, email, name, mobile, firm, gst) {
             let today = new Date();
-            today.setDate(today.getDate() + 7);
-            let expiryString = today.toISOString().split('T')[0];
-
-            await setDoc(doc(db, "users", uid), {
-                email: email,
-                name: name,
-                mobile: mobile,
-                firmName: firm,
-                gstNumber: gst,
-                plan: "Free Trial",
-                expiryDate: expiryString,
-                status: "Active",
-                createdAt: new Date().toISOString().split('T')[0]
-            });
+            today.setDate(today.getDate() + 180);
+            await setDoc(doc(db, "users", uid), { email: email, name: name, mobile: mobile, firmName: firm, gstNumber: gst, plan: "6-Month Beta Plan", expiryDate: today.toISOString().split('T')[0], status: "Active", createdAt: new Date().toISOString().split('T')[0] });
         }
     </script>
 </body>
+
 </html>
