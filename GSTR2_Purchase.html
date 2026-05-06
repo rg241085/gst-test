@@ -1336,6 +1336,9 @@
 
         function flattenGSTJson(jsonObj) {
             let flatList = [];
+            // ✨ नया: फाइल के अंदर से महीना (Return Period) निकालें
+            let filePeriod = jsonObj.rtnprd || (jsonObj.data && jsonObj.data.rtnprd) || 'UNKNOWN';
+
             function extractInvoices(obj, currentSupplierGstin = "", currentSupplierName = "") {
                 if (!obj) return;
                 if (Array.isArray(obj)) {
@@ -1362,7 +1365,8 @@
                             sgst = parseFloat(obj.samt !== undefined ? obj.samt : (obj.sgst || 0));
                             rate = parseFloat(obj.rt || rate);
                         }
-                        flatList.push({ gstin: gstin, name: name, inv: obj.inum || obj.inv_no, date: obj.dt || '', amt: txval, igst: igst, cgst: cgst, sgst: sgst, rt: rate });
+                        // ✨ नया: हर इनवॉइस के साथ उसका 'महीना (period)' भी डेटाबेस में सेव करें
+                        flatList.push({ gstin: gstin, name: name, inv: obj.inum || obj.inv_no, date: obj.dt || '', amt: txval, igst: igst, cgst: cgst, sgst: sgst, rt: rate, period: filePeriod });
                     } else {
                         for (let key in obj) if (typeof obj[key] === 'object') extractInvoices(obj[key], gstin, name);
                     }
@@ -1453,7 +1457,7 @@
                     let pData = await parseFile(selectedPortalFiles[i]);
                     newPortalData = newPortalData.concat(pData);
                 }
-// ✨ Smart Deduplication Logic (डुप्लीकेट बिल रोकने के लिए)
+                // ✨ Smart Deduplication Logic (डुप्लीकेट बिल रोकने के लिए)
                 let existingKeys = new Set(existingPortal.map(p => p.gstin + "_" + p.inv));
                 let uniqueNewPortalData = [];
 
@@ -1465,9 +1469,35 @@
                     }
                 });
 
-                // अब पुराने डेटा में सिर्फ़ यूनीक (Unique) नया डेटा ही जोड़ा जाएगा
-                let finalPortalData = existingPortal.concat(uniqueNewPortalData);
-                
+                // ✨ स्मार्ट लॉजिक (Option 2): महीने के हिसाब से पुराना कचरा साफ़ करना
+
+                // 1. पता करें कि नई अपलोड की गई फाइल(ओं) में कौन-कौन से महीने (period) का डेटा है
+                let newPeriods = new Set();
+                newPortalData.forEach(p => {
+                    // अगर JSON से पीरियड नहीं मिला (जैसे Excel फाइल), तो डेट से निकालने की कोशिश करें
+                    if (!p.period && p.date) {
+                        let parts = String(p.date).split(/[-/]/);
+                        if (parts.length >= 2) p.period = parts[1] + parts[2];
+                    }
+                    if (p.period && p.period !== 'UNKNOWN') newPeriods.add(p.period);
+                });
+
+                // 2. पुराने डेटा में से सिर्फ़ उन महीनों का डेटा डिलीट करें, जो नई फाइल में मौजूद हैं
+                let filteredExistingPortal = existingPortal.filter(p => {
+                    let pPeriod = p.period;
+                    if (!pPeriod && p.date) {
+                        let parts = String(p.date).split(/[-/]/);
+                        if (parts.length >= 2) pPeriod = parts[1] + parts[2];
+                    }
+                    // अगर यह पुराना बिल उस महीने का है जिसकी नई फाइल आई है, तो इसे हटा दें (false)
+                    if (pPeriod && newPeriods.has(pPeriod)) {
+                        return false;
+                    }
+                    return true; // बाकी महीनों का डेटा सुरक्षित रखें
+                });
+
+                // 3. अब साफ़ किए हुए पुराने डेटा में नई फाइल का ताज़ा डेटा (100% सही) जोड़ दें
+                let finalPortalData = filteredExistingPortal.concat(newPortalData);
                 // बुक्स (Excel) के डेटा में भी अगर कोई डुप्लीकेट एंट्री हो तो उसे भी साफ कर दें
                 let seenBooks = new Set();
                 finalBooksData = finalBooksData.filter(b => {
